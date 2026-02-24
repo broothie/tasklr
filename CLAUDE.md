@@ -32,6 +32,7 @@ If you get stuck on something that requires outside help (e.g. missing secrets, 
 
 ## Guidelines
 
+- **Do not use plan mode.** Jump straight into making changes — you are running autonomously with no user to approve plans.
 - Make incremental progress each run. Don't try to do everything at once.
 - Prefer working, minimal implementations over ambitious incomplete ones.
 - If something is broken, fix it before adding new features.
