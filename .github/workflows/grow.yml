@@ -56,7 +56,7 @@ jobs:
             You have approximately ${{ inputs.max_turns || '150' }} turns this run, and the run timeout is set to 30 minutes.
             Budget your work accordingly — commit early and often, and write your update file well before you run out.
             Keep track of your turns by outputting the current turn count somewhere in each turn's output.
-            Try to finish working with 5 turns to spare.
+            Try to finish working with 10 turns to spare.
 
             Commit your changes with a clear commit message.
           claude_args: |
