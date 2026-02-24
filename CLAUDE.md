@@ -36,3 +36,4 @@ If you get stuck on something that requires outside help (e.g. missing secrets, 
 - Prefer working, minimal implementations over ambitious incomplete ones.
 - If something is broken, fix it before adding new features.
 - Write clear commit messages describing what changed.
+- **Commit early and often.** You may be cut off at any time without warning. Commit working changes as you go so progress isn't lost. Write the update file and commit it before doing optional cleanup or polish.
