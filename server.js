@@ -34,11 +34,43 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Auth middleware
-function requireAuth(req, res, next) {
+async function requireAuth(req, res, next) {
   if (!req.session.tokens) {
     return res.redirect('/login');
   }
+  // Try to refresh tokens if expired
+  const tokens = await refreshTokensIfNeeded(req.session);
+  if (!tokens) {
+    req.session.destroy(() => {
+      res.redirect('/login?error=token_refresh_failed');
+    });
+    return;
+  }
   next();
+}
+
+// Helper: refresh expired tokens if needed
+async function refreshTokensIfNeeded(session) {
+  if (!session.tokens) return null;
+
+  const { expiry_date, refresh_token } = session.tokens;
+  const now = Date.now();
+
+  // If token will expire in the next 5 minutes, refresh it
+  if (expiry_date && expiry_date - now < 5 * 60 * 1000) {
+    try {
+      const oauth2Client = createOAuthClient();
+      oauth2Client.setCredentials(session.tokens);
+      const { credentials } = await oauth2Client.refreshAccessToken();
+      session.tokens = credentials;
+      return credentials;
+    } catch (err) {
+      console.error('Token refresh failed:', err);
+      return null;
+    }
+  }
+
+  return session.tokens;
 }
 
 // Helper: get authenticated Tasks client
@@ -46,6 +78,23 @@ function getTasksClient(tokens) {
   const oauth2Client = createOAuthClient();
   oauth2Client.setCredentials(tokens);
   return google.tasks({ version: 'v1', auth: oauth2Client });
+}
+
+// Helper: handle API errors and check for auth failures
+function handleApiError(err, req, res) {
+  if (err.status === 401) {
+    // Token is revoked or invalid
+    req.session.destroy(() => {
+      res.status(401).json({ error: 'Authentication failed. Please sign in again.' });
+    });
+    return true;
+  }
+  if (err.status === 403) {
+    console.error('Permission denied:', err);
+    res.status(403).json({ error: 'Permission denied' });
+    return true;
+  }
+  return false;
 }
 
 // ─── Auth routes ────────────────────────────────────────────────────────────
@@ -108,7 +157,8 @@ app.get('/api/tasklists', requireAuth, async (req, res) => {
     const { data } = await tasks.tasklists.list({ maxResults: 100 });
     res.json(data.items || []);
   } catch (err) {
-    console.error('Error fetching task lists:', err);
+    if (handleApiError(err, req, res)) return;
+    console.error('Error fetching task lists:', err.message);
     res.status(500).json({ error: 'Failed to fetch task lists' });
   }
 });
@@ -126,7 +176,8 @@ app.get('/api/tasklists/:listId/tasks', requireAuth, async (req, res) => {
     });
     res.json(data.items || []);
   } catch (err) {
-    console.error('Error fetching tasks:', err);
+    if (handleApiError(err, req, res)) return;
+    console.error('Error fetching tasks:', err.message);
     res.status(500).json({ error: 'Failed to fetch tasks' });
   }
 });
@@ -148,7 +199,8 @@ app.post('/api/tasklists/:listId/tasks', requireAuth, async (req, res) => {
     });
     res.status(201).json(data);
   } catch (err) {
-    console.error('Error creating task:', err);
+    if (handleApiError(err, req, res)) return;
+    console.error('Error creating task:', err.message);
     res.status(500).json({ error: 'Failed to create task' });
   }
 });
@@ -170,7 +222,8 @@ app.patch('/api/tasklists/:listId/tasks/:taskId', requireAuth, async (req, res) 
     });
     res.json(data);
   } catch (err) {
-    console.error('Error updating task:', err);
+    if (handleApiError(err, req, res)) return;
+    console.error('Error updating task:', err.message);
     res.status(500).json({ error: 'Failed to update task' });
   }
 });
@@ -184,7 +237,8 @@ app.delete('/api/tasklists/:listId/tasks/:taskId', requireAuth, async (req, res)
     });
     res.status(204).end();
   } catch (err) {
-    console.error('Error deleting task:', err);
+    if (handleApiError(err, req, res)) return;
+    console.error('Error deleting task:', err.message);
     res.status(500).json({ error: 'Failed to delete task' });
   }
 });
