@@ -10,6 +10,18 @@ on:
         description: "Max turns for Claude"
         default: "150"
         type: string
+      model:
+        description: "Claude model"
+        default: "claude-haiku-4-5-20251001"
+        type: choice
+        options:
+          - claude-haiku-4-5-20251001
+          - claude-sonnet-4-6
+          - claude-opus-4-6
+      thinking:
+        description: "Enable extended thinking"
+        default: true
+        type: boolean
 
 jobs:
   grow:
@@ -37,7 +49,7 @@ jobs:
             You have approximately ${{ inputs.max_turns || '150' }} turns this run. Budget your work accordingly — commit early and often, and write your update file well before you run out.
 
             Commit your changes with a clear commit message.
-          claude_args: "--max-turns ${{ inputs.max_turns || '150' }} --model claude-opus-4-6 --thinking --allowedTools '*'"
+          claude_args: "--max-turns ${{ inputs.max_turns || '150' }} --model ${{ inputs.model || 'claude-haiku-4-5-20251001' }} ${{ (inputs.thinking == true || inputs.thinking == '') && '--thinking' || '' }} --allowedTools '*'"
 
       - name: Push changes
         run: |
