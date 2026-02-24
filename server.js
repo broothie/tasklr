@@ -292,6 +292,24 @@ app.delete('/api/tasklists/:listId/tasks/:taskId', requireAuth, async (req, res)
   }
 });
 
+app.post('/api/tasklists/:listId/tasks/:taskId/move', requireAuth, async (req, res) => {
+  const { previous } = req.body; // null = move to top
+  try {
+    const tasks = getTasksClient(req.session.tokens);
+    const params = {
+      tasklist: req.params.listId,
+      task: req.params.taskId,
+    };
+    if (previous) params.previous = previous;
+    const { data } = await tasks.tasks.move(params);
+    res.json(data);
+  } catch (err) {
+    if (handleApiError(err, req, res)) return;
+    console.error('Error moving task:', err.message);
+    res.status(500).json({ error: 'Failed to move task' });
+  }
+});
+
 app.post('/api/tasklists/:listId/clear', requireAuth, async (req, res) => {
   try {
     const tasks = getTasksClient(req.session.tokens);

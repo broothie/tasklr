@@ -444,6 +444,11 @@
       color: var(--red);
     }
 
+    .task-due.due-today {
+      color: #d97706;
+      font-weight: 600;
+    }
+
     .task-actions {
       display: flex;
       gap: 4px;
@@ -475,6 +480,46 @@
     .icon-btn.delete:hover {
       background: #fee2e2;
       color: var(--red);
+    }
+
+    .move-btns {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .task-card:hover .move-btns {
+      opacity: 1;
+    }
+
+    .move-btn {
+      background: none;
+      border: none;
+      padding: 2px 4px;
+      border-radius: 4px;
+      cursor: pointer;
+      color: var(--gray-400);
+      display: flex;
+      align-items: center;
+      transition: all 0.15s;
+      line-height: 0;
+    }
+
+    .move-btn:hover:not(:disabled) {
+      background: var(--gray-100);
+      color: var(--gray-700);
+    }
+
+    .move-btn:disabled {
+      opacity: 0.25;
+      cursor: default;
+    }
+
+    .move-btn svg {
+      width: 14px;
+      height: 14px;
     }
 
     .icon-btn svg {
@@ -962,6 +1007,35 @@
     }
   }
 
+  // ─── Due date label ───────────────────────────────────────
+  function formatDueDate(dueDate, isCompleted) {
+    if (!dueDate) return null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const due = new Date(dueDate);
+    due.setHours(0, 0, 0, 0);
+    const diffDays = Math.round((due - today) / (1000 * 60 * 60 * 24));
+
+    let label, cls = 'task-due';
+    if (diffDays < -1) {
+      label = `${Math.abs(diffDays)} days overdue`;
+      if (!isCompleted) cls += ' overdue';
+    } else if (diffDays === -1) {
+      label = 'Yesterday';
+      if (!isCompleted) cls += ' overdue';
+    } else if (diffDays === 0) {
+      label = 'Due today';
+      if (!isCompleted) cls += ' due-today';
+    } else if (diffDays === 1) {
+      label = 'Due tomorrow';
+    } else if (diffDays <= 7) {
+      label = `Due in ${diffDays} days`;
+    } else {
+      label = `Due ${due.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`;
+    }
+    return { label, cls };
+  }
+
   function renderTasks(tasks) {
     const container = document.getElementById('task-list');
     const needsAction = tasks.filter(t => t.status !== 'completed');
@@ -982,16 +1056,32 @@
       return;
     }
 
-    container.innerHTML = ordered.map(task => {
+    container.innerHTML = ordered.map((task, idx) => {
       const isCompleted = task.status === 'completed';
-      const dueDate = task.due ? new Date(task.due) : null;
-      const today = new Date();
-      today.setHours(0,0,0,0);
-      const isOverdue = dueDate && dueDate < today && !isCompleted;
-      const dueDateStr = dueDate ? dueDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+      const dueInfo = task.due ? formatDueDate(task.due, isCompleted) : null;
+
+      // Move buttons: only for needsAction tasks
+      const naIndex = needsAction.indexOf(task);
+      const canMoveUp = !isCompleted && naIndex > 0;
+      const canMoveDown = !isCompleted && naIndex < needsAction.length - 1;
+      const moveBtns = isCompleted ? '' : `
+        <div class="move-btns">
+          <button class="move-btn" onclick="moveTask('${task.id}', 'up')" title="Move up" ${canMoveUp ? '' : 'disabled'}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="18 15 12 9 6 15"></polyline>
+            </svg>
+          </button>
+          <button class="move-btn" onclick="moveTask('${task.id}', 'down')" title="Move down" ${canMoveDown ? '' : 'disabled'}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+        </div>
+      `;
 
       return `
         <div class="task-card ${isCompleted ? 'completed' : ''}" id="task-${task.id}">
+          ${moveBtns}
           <div class="task-checkbox" onclick="toggleComplete('${task.id}', ${isCompleted})">
             <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" width="12" height="12">
               <polyline points="20 6 9 17 4 12"></polyline>
@@ -1000,7 +1090,7 @@
           <div class="task-content">
             <div class="task-title">${escHtml(task.title || '(No title)')}</div>
             ${task.notes ? `<div class="task-notes">${escHtml(task.notes)}</div>` : ''}
-            ${dueDateStr ? `<div class="task-due ${isOverdue ? 'overdue' : ''}">Due: ${dueDateStr}${isOverdue ? ' · Overdue' : ''}</div>` : ''}
+            ${dueInfo ? `<div class="${dueInfo.cls}">${dueInfo.label}</div>` : ''}
           </div>
           <div class="task-actions">
             <button class="icon-btn" onclick="openEditModal('${task.id}')" title="Edit">
@@ -1089,6 +1179,36 @@
       showToast('Task deleted', 'success');
     } catch (err) {
       showToast('Failed to delete task. Please try again.', 'error');
+    }
+  }
+
+  // ─── Move task ────────────────────────────────────────────
+  async function moveTask(taskId, direction) {
+    const needsAction = currentTasks.filter(t => t.status !== 'completed');
+    const idx = needsAction.findIndex(t => t.id === taskId);
+    if (idx === -1) return;
+
+    let previous; // undefined = not sending (move to top); string = task id before new position
+    if (direction === 'up') {
+      if (idx === 0) return;
+      // Move to position idx-1 means new previous is task at idx-2 (or null for top)
+      previous = idx >= 2 ? needsAction[idx - 2].id : null;
+    } else {
+      if (idx >= needsAction.length - 1) return;
+      // Move to position idx+1 means new previous is task at idx+1
+      previous = needsAction[idx + 1].id;
+    }
+
+    try {
+      const res = await fetch(`/api/tasklists/${currentListId}/tasks/${taskId}/move`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ previous }),
+      });
+      if (!res.ok) throw new Error('Failed');
+      await loadTasks(currentListId);
+    } catch (err) {
+      showToast('Failed to move task. Please try again.', 'error');
     }
   }
 
