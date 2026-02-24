@@ -1,0 +1,38 @@
+name: Grow
+
+on:
+  schedule:
+    # Run every 6 hours
+    - cron: "0 */6 * * *"
+  workflow_dispatch: # Allow manual triggers
+
+jobs:
+  grow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      issues: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            You are working on the Tasklr project. Read CLAUDE.md for the project goal and constraints.
+
+            Read the latest file(s) in updates/ to understand the current state, then decide what to work on next.
+            Make incremental progress, test what you can, and create a new sequentially-numbered update file in updates/ when you're done.
+
+            Commit your changes with a clear commit message.
+          claude_args: "--max-turns 150"
+
+      - name: Push changes
+        run: |
+          git config user.name "tasklr-bot"
+          git config user.email "tasklr-bot@users.noreply.github.com"
+          git push
