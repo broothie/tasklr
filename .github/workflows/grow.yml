@@ -13,6 +13,7 @@ jobs:
     permissions:
       contents: write
       issues: write
+      id-token: write
 
     steps:
       - name: Checkout
@@ -29,7 +30,7 @@ jobs:
             Make incremental progress, test what you can, and create a new sequentially-numbered update file in updates/ when you're done.
 
             Commit your changes with a clear commit message.
-          claude_args: "--max-turns 150"
+          claude_args: "--max-turns 150 --model claude-opus-4-6 --thinking --allowedTools '*'"
 
       - name: Push changes
         run: |
