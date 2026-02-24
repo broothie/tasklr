@@ -4,7 +4,12 @@ on:
   schedule:
     # Run every 6 hours
     - cron: "0 */6 * * *"
-  workflow_dispatch: # Allow manual triggers
+  workflow_dispatch:
+    inputs:
+      max_turns:
+        description: "Max turns for Claude"
+        default: "150"
+        type: string
 
 jobs:
   grow:
@@ -30,7 +35,7 @@ jobs:
             Make incremental progress, test what you can, and create a new sequentially-numbered update file in updates/ when you're done.
 
             Commit your changes with a clear commit message.
-          claude_args: "--max-turns 150 --model claude-opus-4-6 --thinking --allowedTools '*'"
+          claude_args: "--max-turns ${{ inputs.max_turns || '150' }} --model claude-opus-4-6 --thinking --allowedTools '*'"
 
       - name: Push changes
         run: |
