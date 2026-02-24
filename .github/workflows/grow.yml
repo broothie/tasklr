@@ -57,6 +57,8 @@ jobs:
             Budget your work accordingly — commit early and often, and write your update file well before you run out.
             Keep track of your turns by outputting the current turn count somewhere in each turn's output.
             Try to finish working with 10 turns to spare.
+            Take note of how many turns different updates required, and use that as a guage for deciding what to work on.
+            Be sure to include how many turns you took when writing the update file.
 
             Commit your changes with a clear commit message.
           claude_args: |
