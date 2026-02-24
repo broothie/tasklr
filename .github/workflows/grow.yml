@@ -8,7 +8,7 @@ on:
     inputs:
       max_turns:
         description: "Max turns for Claude"
-        default: "150"
+        default: "60"
         type: string
       model:
         description: "Claude model"
@@ -53,10 +53,10 @@ jobs:
             Read the latest file(s) in updates/ to understand the current state, then decide what to work on next.
             Make incremental progress, test what you can, and create a new sequentially-numbered update file in updates/ when you're done.
 
-            You have approximately ${{ inputs.max_turns || '150' }} turns this run. Budget your work accordingly — commit early and often, and write your update file well before you run out.
+            You have approximately ${{ inputs.max_turns || '150' }} turns this run, and the run timeout is set to 30 minutes. Budget your work accordingly — commit early and often, and write your update file well before you run out.
 
             Commit your changes with a clear commit message.
-          claude_args: "--max-turns ${{ inputs.max_turns || '150' }} --model ${{ steps.model.outputs.id || 'claude-sonnet-4-6' }} --dangerously-skip-permissions"
+            claude_args: '--allowedTools "Bash,Read,Write,Edit,Glob,Grep,TodoWrite" --max-turns ${{ inputs.max_turns || ''150'' }} --model ${{ steps.model.outputs.id }}'
 
       - name: Push changes
         run: |
