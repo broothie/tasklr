@@ -550,9 +550,125 @@
       margin-top: 20px;
     }
 
+    /* ─── Toasts ─────────────────────────────────────── */
+    #toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 200;
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 8px;
+      max-width: 360px;
+      pointer-events: none;
+    }
+
+    .toast {
+      background: var(--gray-900);
+      color: white;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 0.875rem;
+      line-height: 1.4;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+      animation: toast-in 0.25s ease-out;
+      pointer-events: auto;
+    }
+
+    .toast.success { background: #15803d; }
+    .toast.error { background: #b91c1c; }
+
+    @keyframes toast-in {
+      from { transform: translateX(120%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* ─── Mobile menu button ──────────────────────────── */
+    .btn-menu {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 8px;
+      color: var(--gray-700);
+      align-items: center;
+    }
+
+    .btn-menu:hover { background: var(--gray-100); }
+    .btn-menu svg { width: 20px; height: 20px; }
+
+    /* ─── Sidebar close button (mobile) ──────────────── */
+    .sidebar-close-btn {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+      color: var(--gray-400);
+      align-items: center;
+    }
+
+    .sidebar-close-btn:hover { background: var(--gray-100); color: var(--gray-700); }
+    .sidebar-close-btn svg { width: 18px; height: 18px; }
+
+    /* ─── Sidebar backdrop ────────────────────────────── */
+    .sidebar-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 50;
+    }
+
+    .sidebar-backdrop.visible { display: block; }
+
+    /* ─── Rename list button ──────────────────────────── */
+    .list-rename-btn {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 4px;
+      color: var(--gray-400);
+      flex-shrink: 0;
+      line-height: 0;
+    }
+
+    .list-rename-btn:hover {
+      color: var(--indigo);
+      background: var(--indigo-light);
+    }
+
+    .list-rename-btn svg { width: 13px; height: 13px; }
+    .list-item:hover .list-rename-btn { display: block; }
+
     /* ─── Responsive ─────────────────────────────────── */
     @media (max-width: 640px) {
-      .sidebar { display: none; }
+      .btn-menu { display: flex; }
+      .sidebar-close-btn { display: flex; }
+
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 280px;
+        background: white;
+        z-index: 60;
+        padding: 16px;
+        overflow-y: auto;
+        box-shadow: 2px 0 16px rgba(0,0,0,0.15);
+        transform: translateX(-100%);
+        transition: transform 0.25s ease-out;
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
       .layout { padding: 16px; }
     }
   </style>
@@ -560,7 +676,16 @@
 <body>
 
 <header>
-  <div class="logo">Tasklr</div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <button class="btn-menu" onclick="openMobileSidebar()" title="Open menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
+    <div class="logo">Tasklr</div>
+  </div>
   <div class="user-area">
     <img id="user-avatar" class="user-avatar" src="" alt="" style="display:none">
     <span id="user-name" class="user-name"></span>
@@ -570,16 +695,26 @@
   </div>
 </header>
 
+<div id="sidebar-backdrop" class="sidebar-backdrop" onclick="closeMobileSidebar()"></div>
+
 <div class="layout">
   <aside class="sidebar">
     <div class="sidebar-header">
       <div class="sidebar-title">My Lists</div>
-      <button class="btn-new-list" onclick="toggleNewListForm()" title="New list">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-      </button>
+      <div style="display:flex;gap:2px;align-items:center">
+        <button class="sidebar-close-btn" onclick="closeMobileSidebar()" title="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+        <button class="btn-new-list" onclick="toggleNewListForm()" title="New list">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </button>
+      </div>
     </div>
     <div id="new-list-form" class="new-list-form">
       <input id="new-list-name" class="input" type="text" placeholder="List name" autocomplete="off">
@@ -636,6 +771,8 @@
     </div>
   </main>
 </div>
+
+<div id="toast-container"></div>
 
 <!-- Edit modal -->
 <div id="edit-modal" class="modal-backdrop hidden">
@@ -709,6 +846,12 @@
           <rect x="14" y="14" width="7" height="7"></rect>
         </svg>
         <span class="list-item-label">${escHtml(list.title)}</span>
+        <button class="list-rename-btn" onclick="startRenameList(event, '${list.id}', '${escHtml(list.title)}')" title="Rename list">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          </svg>
+        </button>
         <button class="list-delete-btn" onclick="deleteList(event, '${list.id}', '${escHtml(list.title)}')" title="Delete list">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="3 6 5 6 21 6"></polyline>
@@ -751,8 +894,9 @@
       renderSidebar(lists);
       // Select the newly created list
       selectList(newList.id, newList.title);
+      showToast('List created', 'success');
     } catch (err) {
-      alert('Failed to create list. Please try again.');
+      showToast('Failed to create list. Please try again.', 'error');
     }
   }
 
@@ -782,8 +926,9 @@
           selectList(lists[0].id, lists[0].title);
         }
       }
+      showToast('List deleted', 'success');
     } catch (err) {
-      alert('Failed to delete list. Please try again.');
+      showToast('Failed to delete list. Please try again.', 'error');
     }
   }
 
@@ -797,8 +942,9 @@
     const activeBtn = document.getElementById(`list-btn-${listId}`);
     if (activeBtn) activeBtn.classList.add('active');
 
-    // Close add form
+    // Close add form and mobile sidebar
     document.getElementById('add-task-form').classList.remove('visible');
+    closeMobileSidebar();
 
     await loadTasks(listId);
   }
@@ -913,8 +1059,9 @@
       clearAddForm();
       document.getElementById('add-task-form').classList.remove('visible');
       await loadTasks(currentListId);
+      showToast('Task added', 'success');
     } catch (err) {
-      alert('Failed to create task. Please try again.');
+      showToast('Failed to create task. Please try again.', 'error');
     }
   }
 
@@ -929,7 +1076,7 @@
       });
       await loadTasks(currentListId);
     } catch (err) {
-      alert('Failed to update task. Please try again.');
+      showToast('Failed to update task. Please try again.', 'error');
     }
   }
 
@@ -939,8 +1086,9 @@
     try {
       await fetch(`/api/tasklists/${currentListId}/tasks/${taskId}`, { method: 'DELETE' });
       await loadTasks(currentListId);
+      showToast('Task deleted', 'success');
     } catch (err) {
-      alert('Failed to delete task. Please try again.');
+      showToast('Failed to delete task. Please try again.', 'error');
     }
   }
 
@@ -951,8 +1099,9 @@
       const res = await fetch(`/api/tasklists/${currentListId}/clear`, { method: 'POST' });
       if (!res.ok) throw new Error('Failed');
       await loadTasks(currentListId);
+      showToast('Completed tasks cleared', 'success');
     } catch (err) {
-      alert('Failed to clear completed tasks. Please try again.');
+      showToast('Failed to clear completed tasks. Please try again.', 'error');
     }
   }
 
@@ -990,8 +1139,100 @@
       });
       closeEditModal();
       await loadTasks(currentListId);
+      showToast('Task saved', 'success');
     } catch (err) {
-      alert('Failed to save changes. Please try again.');
+      showToast('Failed to save changes. Please try again.', 'error');
+    }
+  }
+
+  // ─── Mobile sidebar ──────────────────────────────────────
+  function openMobileSidebar() {
+    document.querySelector('.sidebar').classList.add('open');
+    document.getElementById('sidebar-backdrop').classList.add('visible');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeMobileSidebar() {
+    document.querySelector('.sidebar').classList.remove('open');
+    document.getElementById('sidebar-backdrop').classList.remove('visible');
+    document.body.style.overflow = '';
+  }
+
+  // ─── Toast notifications ──────────────────────────────────
+  function showToast(message, type = 'info', duration = 3500) {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.style.transition = 'opacity 0.3s';
+      toast.style.opacity = '0';
+      setTimeout(() => toast.remove(), 300);
+    }, duration);
+  }
+
+  // ─── List rename ──────────────────────────────────────────
+  function startRenameList(event, listId, currentTitle) {
+    event.stopPropagation();
+    const btn = document.getElementById(`list-btn-${listId}`);
+    if (!btn) return;
+    const label = btn.querySelector('.list-item-label');
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'input';
+    input.style.cssText = 'padding:3px 8px;font-size:0.875rem;height:auto;width:100%;';
+    input.value = currentTitle;
+
+    label.textContent = '';
+    label.appendChild(input);
+    input.focus();
+    input.select();
+
+    let saved = false;
+
+    const save = async () => {
+      if (saved) return;
+      saved = true;
+      await saveRenameList(listId, input.value);
+    };
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); save(); }
+      else if (e.key === 'Escape') {
+        saved = true;
+        fetch('/api/tasklists').then(r => r.json()).then(lists => renderSidebar(lists));
+      }
+    });
+
+    input.addEventListener('blur', save);
+  }
+
+  async function saveRenameList(listId, newTitle) {
+    const title = newTitle.trim();
+    if (!title) {
+      const lists = await fetch('/api/tasklists').then(r => r.json());
+      renderSidebar(lists);
+      return;
+    }
+    try {
+      const res = await fetch(`/api/tasklists/${listId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title }),
+      });
+      if (!res.ok) throw new Error('Failed');
+      const lists = await fetch('/api/tasklists').then(r => r.json());
+      renderSidebar(lists);
+      if (currentListId === listId) {
+        document.getElementById('list-title').textContent = title;
+      }
+      showToast('List renamed', 'success');
+    } catch (err) {
+      showToast('Failed to rename list. Please try again.', 'error');
+      const lists = await fetch('/api/tasklists').then(r => r.json());
+      renderSidebar(lists);
     }
   }
 

@@ -181,6 +181,25 @@ app.post('/api/tasklists', requireAuth, async (req, res) => {
   }
 });
 
+app.patch('/api/tasklists/:listId', requireAuth, async (req, res) => {
+  const { title } = req.body;
+  if (!title || !title.trim()) {
+    return res.status(400).json({ error: 'Title is required' });
+  }
+  try {
+    const tasks = getTasksClient(req.session.tokens);
+    const { data } = await tasks.tasklists.patch({
+      tasklist: req.params.listId,
+      requestBody: { title: title.trim() },
+    });
+    res.json(data);
+  } catch (err) {
+    if (handleApiError(err, req, res)) return;
+    console.error('Error renaming task list:', err.message);
+    res.status(500).json({ error: 'Failed to rename task list' });
+  }
+});
+
 app.delete('/api/tasklists/:listId', requireAuth, async (req, res) => {
   try {
     const tasks = getTasksClient(req.session.tokens);
