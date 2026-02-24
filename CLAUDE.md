@@ -25,6 +25,7 @@ Each run, you should:
 3. Make your changes — write code, install dependencies, create files, etc.
 4. Test your changes if possible (linting, type checking, build, etc.).
 5. Create a new update file in `updates/` prefixed with a UTC timestamp (e.g. `2026-02-23T12-00-00Z-short-description.md`). Include what you did and what should come next.
+6. Commit your changes directly to `main`. A separate push action will follow your run.
 
 ## Getting Help
 
@@ -37,4 +38,4 @@ If you get stuck on something that requires outside help (e.g. missing secrets, 
 - Prefer working, minimal implementations over ambitious incomplete ones.
 - If something is broken, fix it before adding new features.
 - Write clear commit messages describing what changed.
-- **Commit early and often.** You may be cut off at any time without warning. Commit working changes as you go so progress isn't lost. Write the update file and commit it before doing optional cleanup or polish.
+- **Commit to `main` early and often.** You may be cut off at any time without warning. Commit working changes as you go so progress isn't lost. Write the update file and commit it before doing optional cleanup or polish.
