@@ -163,6 +163,36 @@ app.get('/api/tasklists', requireAuth, async (req, res) => {
   }
 });
 
+app.post('/api/tasklists', requireAuth, async (req, res) => {
+  const { title } = req.body;
+  if (!title || !title.trim()) {
+    return res.status(400).json({ error: 'Title is required' });
+  }
+  try {
+    const tasks = getTasksClient(req.session.tokens);
+    const { data } = await tasks.tasklists.insert({
+      requestBody: { title: title.trim() },
+    });
+    res.status(201).json(data);
+  } catch (err) {
+    if (handleApiError(err, req, res)) return;
+    console.error('Error creating task list:', err.message);
+    res.status(500).json({ error: 'Failed to create task list' });
+  }
+});
+
+app.delete('/api/tasklists/:listId', requireAuth, async (req, res) => {
+  try {
+    const tasks = getTasksClient(req.session.tokens);
+    await tasks.tasklists.delete({ tasklist: req.params.listId });
+    res.status(204).end();
+  } catch (err) {
+    if (handleApiError(err, req, res)) return;
+    console.error('Error deleting task list:', err.message);
+    res.status(500).json({ error: 'Failed to delete task list' });
+  }
+});
+
 // ─── API: Tasks ──────────────────────────────────────────────────────────────
 
 app.get('/api/tasklists/:listId/tasks', requireAuth, async (req, res) => {
@@ -240,6 +270,18 @@ app.delete('/api/tasklists/:listId/tasks/:taskId', requireAuth, async (req, res)
     if (handleApiError(err, req, res)) return;
     console.error('Error deleting task:', err.message);
     res.status(500).json({ error: 'Failed to delete task' });
+  }
+});
+
+app.post('/api/tasklists/:listId/clear', requireAuth, async (req, res) => {
+  try {
+    const tasks = getTasksClient(req.session.tokens);
+    await tasks.tasks.clear({ tasklist: req.params.listId });
+    res.status(204).end();
+  } catch (err) {
+    if (handleApiError(err, req, res)) return;
+    console.error('Error clearing completed tasks:', err.message);
+    res.status(500).json({ error: 'Failed to clear completed tasks' });
   }
 });
 

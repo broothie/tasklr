@@ -99,14 +99,69 @@
       flex-shrink: 0;
     }
 
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      padding: 0 8px;
+    }
+
     .sidebar-title {
       font-size: 0.75rem;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--gray-400);
-      margin-bottom: 8px;
-      padding: 0 8px;
+    }
+
+    .btn-new-list {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--gray-400);
+      padding: 2px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      transition: all 0.15s;
+    }
+
+    .btn-new-list:hover {
+      color: var(--indigo);
+      background: var(--indigo-light);
+    }
+
+    .btn-new-list svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .new-list-form {
+      display: none;
+      padding: 8px 4px;
+      margin-bottom: 4px;
+    }
+
+    .new-list-form.visible {
+      display: block;
+    }
+
+    .new-list-form .input {
+      font-size: 0.875rem;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+    }
+
+    .new-list-form-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .new-list-form-actions .btn {
+      flex: 1;
+      padding: 6px 10px;
+      font-size: 0.8rem;
     }
 
     .list-item {
@@ -123,6 +178,7 @@
       background: none;
       width: 100%;
       text-align: left;
+      position: relative;
     }
 
     .list-item:hover {
@@ -144,6 +200,40 @@
 
     .list-item.active .list-icon {
       opacity: 1;
+    }
+
+    .list-item-label {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .list-delete-btn {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 4px;
+      color: var(--gray-400);
+      flex-shrink: 0;
+      line-height: 0;
+    }
+
+    .list-delete-btn:hover {
+      color: var(--red);
+      background: #fee2e2;
+    }
+
+    .list-delete-btn svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .list-item:hover .list-delete-btn {
+      display: block;
     }
 
     /* ─── Main ─────────────────────────────────────── */
@@ -482,7 +572,22 @@
 
 <div class="layout">
   <aside class="sidebar">
-    <div class="sidebar-title">My Lists</div>
+    <div class="sidebar-header">
+      <div class="sidebar-title">My Lists</div>
+      <button class="btn-new-list" onclick="toggleNewListForm()" title="New list">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+      </button>
+    </div>
+    <div id="new-list-form" class="new-list-form">
+      <input id="new-list-name" class="input" type="text" placeholder="List name" autocomplete="off">
+      <div class="new-list-form-actions">
+        <button class="btn btn-secondary" onclick="toggleNewListForm()">Cancel</button>
+        <button class="btn btn-primary" onclick="createList()">Create</button>
+      </div>
+    </div>
     <div id="sidebar-lists">
       <div class="state-msg" style="padding:20px 0">
         <p>Loading...</p>
@@ -493,13 +598,18 @@
   <main class="main">
     <div class="main-header">
       <h1 id="list-title" class="list-title">Select a list</h1>
-      <button id="btn-add-task" class="btn-add" onclick="toggleAddForm()" disabled>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-        Add Task
-      </button>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button id="btn-clear-completed" class="btn btn-secondary" onclick="clearCompleted()" style="display:none;font-size:0.8rem;padding:8px 14px">
+          Clear completed
+        </button>
+        <button id="btn-add-task" class="btn-add" onclick="toggleAddForm()" disabled>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Add Task
+        </button>
+      </div>
     </div>
 
     <div id="add-task-form" class="add-task-form">
@@ -587,7 +697,7 @@
   function renderSidebar(lists) {
     const container = document.getElementById('sidebar-lists');
     if (!lists.length) {
-      container.innerHTML = '<div class="state-msg" style="padding:20px 0"><p>No lists found.</p></div>';
+      container.innerHTML = '<div class="state-msg" style="padding:20px 0"><p>No lists yet. Create one!</p></div>';
       return;
     }
     container.innerHTML = lists.map(list => `
@@ -598,9 +708,83 @@
           <rect x="3" y="14" width="7" height="7"></rect>
           <rect x="14" y="14" width="7" height="7"></rect>
         </svg>
-        ${escHtml(list.title)}
+        <span class="list-item-label">${escHtml(list.title)}</span>
+        <button class="list-delete-btn" onclick="deleteList(event, '${list.id}', '${escHtml(list.title)}')" title="Delete list">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+            <path d="M10 11v6M14 11v6"></path>
+            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
+          </svg>
+        </button>
       </button>
     `).join('');
+  }
+
+  // ─── New list form ────────────────────────────────────────
+  function toggleNewListForm() {
+    const form = document.getElementById('new-list-form');
+    form.classList.toggle('visible');
+    if (form.classList.contains('visible')) {
+      document.getElementById('new-list-name').value = '';
+      document.getElementById('new-list-name').focus();
+    }
+  }
+
+  async function createList() {
+    const title = document.getElementById('new-list-name').value.trim();
+    if (!title) {
+      document.getElementById('new-list-name').focus();
+      return;
+    }
+    try {
+      const res = await fetch('/api/tasklists', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title }),
+      });
+      if (!res.ok) throw new Error('Failed');
+      const newList = await res.json();
+      toggleNewListForm();
+      // Reload sidebar lists
+      const lists = await fetch('/api/tasklists').then(r => r.json());
+      renderSidebar(lists);
+      // Select the newly created list
+      selectList(newList.id, newList.title);
+    } catch (err) {
+      alert('Failed to create list. Please try again.');
+    }
+  }
+
+  async function deleteList(event, listId, listTitle) {
+    event.stopPropagation();
+    if (!confirm(`Delete the list "${listTitle}" and all its tasks?`)) return;
+    try {
+      const res = await fetch(`/api/tasklists/${listId}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed');
+      // Reload sidebar
+      const lists = await fetch('/api/tasklists').then(r => r.json());
+      renderSidebar(lists);
+      // If the deleted list was active, reset the main area
+      if (currentListId === listId) {
+        currentListId = null;
+        document.getElementById('list-title').textContent = 'Select a list';
+        document.getElementById('btn-add-task').disabled = true;
+        document.getElementById('btn-clear-completed').style.display = 'none';
+        document.getElementById('add-task-form').classList.remove('visible');
+        document.getElementById('task-list').innerHTML = `
+          <div class="state-msg">
+            <div class="emoji">☑️</div>
+            <p>Select a task list from the sidebar to get started.</p>
+          </div>
+        `;
+        if (lists.length > 0) {
+          selectList(lists[0].id, lists[0].title);
+        }
+      }
+    } catch (err) {
+      alert('Failed to delete list. Please try again.');
+    }
   }
 
   async function selectList(listId, title) {
@@ -637,6 +821,10 @@
     const needsAction = tasks.filter(t => t.status !== 'completed');
     const completed = tasks.filter(t => t.status === 'completed');
     const ordered = [...needsAction, ...completed];
+
+    // Show/hide clear completed button
+    const clearBtn = document.getElementById('btn-clear-completed');
+    clearBtn.style.display = completed.length > 0 ? 'inline-flex' : 'none';
 
     if (!ordered.length) {
       container.innerHTML = `
@@ -756,6 +944,18 @@
     }
   }
 
+  // ─── Clear completed ──────────────────────────────────────
+  async function clearCompleted() {
+    if (!confirm('Remove all completed tasks from this list?')) return;
+    try {
+      const res = await fetch(`/api/tasklists/${currentListId}/clear`, { method: 'POST' });
+      if (!res.ok) throw new Error('Failed');
+      await loadTasks(currentListId);
+    } catch (err) {
+      alert('Failed to clear completed tasks. Please try again.');
+    }
+  }
+
   // ─── Edit modal ───────────────────────────────────────────
   function openEditModal(taskId) {
     const task = currentTasks.find(t => t.id === taskId);
@@ -800,9 +1000,15 @@
     if (e.key === 'Escape') {
       closeEditModal();
       document.getElementById('add-task-form').classList.remove('visible');
+      document.getElementById('new-list-form').classList.remove('visible');
     }
-    if (e.key === 'Enter' && document.getElementById('add-task-form').classList.contains('visible') && document.activeElement.id === 'new-task-title') {
-      createTask();
+    if (e.key === 'Enter') {
+      if (document.getElementById('add-task-form').classList.contains('visible') && document.activeElement.id === 'new-task-title') {
+        createTask();
+      }
+      if (document.getElementById('new-list-form').classList.contains('visible') && document.activeElement.id === 'new-list-name') {
+        createList();
+      }
     }
   });
 
