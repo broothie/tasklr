@@ -11,13 +11,11 @@ on:
         default: "150"
         type: string
       model:
-        description: "Claude model (with/without thinking)"
-        default: "opus-thinking"
+        description: "Claude model"
+        default: "opus"
         type: choice
         options:
-          - opus-thinking
           - opus
-          - sonnet-thinking
           - sonnet
           - haiku
 
@@ -31,7 +29,7 @@ jobs:
       id-token: write
 
     env:
-      MODEL_CHOICE: ${{ inputs.model || 'opus-thinking' }}
+      MODEL_CHOICE: ${{ inputs.model || 'opus' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -40,11 +38,9 @@ jobs:
         id: model
         run: |
           case "$MODEL_CHOICE" in
-            haiku)            echo "id=claude-haiku-4-5-20251001" >> $GITHUB_OUTPUT ;;
-            sonnet)           echo "id=claude-sonnet-4-6" >> $GITHUB_OUTPUT ;;
-            sonnet-thinking)  echo "id=claude-sonnet-4-6" >> $GITHUB_OUTPUT; echo "thinking=true" >> $GITHUB_OUTPUT ;;
-            opus)             echo "id=claude-opus-4-6" >> $GITHUB_OUTPUT ;;
-            opus-thinking)    echo "id=claude-opus-4-6" >> $GITHUB_OUTPUT; echo "thinking=true" >> $GITHUB_OUTPUT ;;
+            haiku)   echo "id=claude-haiku-4-5-20251001" >> $GITHUB_OUTPUT ;;
+            sonnet)  echo "id=claude-sonnet-4-6" >> $GITHUB_OUTPUT ;;
+            opus)    echo "id=claude-opus-4-6" >> $GITHUB_OUTPUT ;;
           esac
 
       - name: Run Claude
@@ -60,7 +56,6 @@ jobs:
             You have approximately ${{ inputs.max_turns || '150' }} turns this run. Budget your work accordingly — commit early and often, and write your update file well before you run out.
 
             Commit your changes with a clear commit message.
-          settings: ${{ steps.model.outputs.thinking == 'true' && '{"alwaysThinkingEnabled": true}' || '{}' }}
           claude_args: "--max-turns ${{ inputs.max_turns || '150' }} --model ${{ steps.model.outputs.id }} --allowedTools '*'"
 
       - name: Push changes
