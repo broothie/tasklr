@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tasklr</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --indigo: #4f46e5;
+      --indigo-dark: #4338ca;
+      --indigo-light: #eef2ff;
+      --gray-50: #f8fafc;
+      --gray-100: #f1f5f9;
+      --gray-200: #e2e8f0;
+      --gray-400: #94a3b8;
+      --gray-500: #64748b;
+      --gray-700: #334155;
+      --gray-900: #0f172a;
+      --red: #ef4444;
+      --green: #22c55e;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--gray-50);
+      color: var(--gray-900);
+      min-height: 100vh;
+    }
+
+    /* ─── Header ─────────────────────────────────────── */
+    header {
+      background: white;
+      border-bottom: 1px solid var(--gray-200);
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .logo {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--indigo);
+      letter-spacing: -0.5px;
+    }
+
+    .user-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-name {
+      font-size: 0.875rem;
+      color: var(--gray-500);
+    }
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .btn-logout {
+      background: none;
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      color: var(--gray-500);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-logout:hover {
+      background: var(--gray-100);
+      color: var(--gray-700);
+    }
+
+    /* ─── Layout ─────────────────────────────────────── */
+    .layout {
+      display: flex;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 16px;
+      gap: 24px;
+    }
+
+    /* ─── Sidebar ─────────────────────────────────────── */
+    .sidebar {
+      width: 240px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--gray-400);
+      margin-bottom: 8px;
+      padding: 0 8px;
+    }
+
+    .list-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      color: var(--gray-700);
+      transition: all 0.1s;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+    }
+
+    .list-item:hover {
+      background: var(--gray-100);
+    }
+
+    .list-item.active {
+      background: var(--indigo-light);
+      color: var(--indigo);
+      font-weight: 600;
+    }
+
+    .list-icon {
+      width: 18px;
+      height: 18px;
+      opacity: 0.6;
+      flex-shrink: 0;
+    }
+
+    .list-item.active .list-icon {
+      opacity: 1;
+    }
+
+    /* ─── Main ─────────────────────────────────────── */
+    .main {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .main-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .list-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--gray-900);
+    }
+
+    /* ─── Add task form ─────────────────────────────── */
+    .add-task-form {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .add-task-form.visible {
+      display: block;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .form-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .input {
+      flex: 1;
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 0.9rem;
+      color: var(--gray-900);
+      transition: border-color 0.15s;
+      font-family: inherit;
+    }
+
+    .input:focus {
+      outline: none;
+      border-color: var(--indigo);
+    }
+
+    textarea.input {
+      resize: vertical;
+      min-height: 70px;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 8px;
+      padding: 9px 18px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: var(--indigo);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--indigo-dark);
+    }
+
+    .btn-secondary {
+      background: var(--gray-100);
+      color: var(--gray-700);
+    }
+
+    .btn-secondary:hover {
+      background: var(--gray-200);
+    }
+
+    .btn-add {
+      background: var(--indigo);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 18px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s;
+      font-family: inherit;
+    }
+
+    .btn-add:hover {
+      background: var(--indigo-dark);
+    }
+
+    /* ─── Task list ──────────────────────────────────── */
+    .task-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .task-card {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: 10px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      transition: box-shadow 0.15s;
+    }
+
+    .task-card:hover {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .task-card.completed {
+      opacity: 0.55;
+    }
+
+    .task-checkbox {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--gray-200);
+      border-radius: 50%;
+      flex-shrink: 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      margin-top: 2px;
+    }
+
+    .task-checkbox:hover {
+      border-color: var(--green);
+    }
+
+    .task-card.completed .task-checkbox {
+      background: var(--green);
+      border-color: var(--green);
+    }
+
+    .task-checkbox svg {
+      display: none;
+    }
+
+    .task-card.completed .task-checkbox svg {
+      display: block;
+    }
+
+    .task-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .task-title {
+      font-size: 0.95rem;
+      color: var(--gray-900);
+      line-height: 1.4;
+    }
+
+    .task-card.completed .task-title {
+      text-decoration: line-through;
+    }
+
+    .task-notes {
+      font-size: 0.8rem;
+      color: var(--gray-400);
+      margin-top: 3px;
+      white-space: pre-wrap;
+    }
+
+    .task-due {
+      font-size: 0.75rem;
+      color: var(--gray-400);
+      margin-top: 4px;
+    }
+
+    .task-due.overdue {
+      color: var(--red);
+    }
+
+    .task-actions {
+      display: flex;
+      gap: 4px;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .task-card:hover .task-actions {
+      opacity: 1;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      padding: 6px;
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--gray-400);
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+    }
+
+    .icon-btn:hover {
+      background: var(--gray-100);
+      color: var(--gray-700);
+    }
+
+    .icon-btn.delete:hover {
+      background: #fee2e2;
+      color: var(--red);
+    }
+
+    .icon-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* ─── Empty / Loading states ─────────────────────── */
+    .state-msg {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--gray-400);
+    }
+
+    .state-msg .emoji {
+      font-size: 2.5rem;
+      margin-bottom: 12px;
+    }
+
+    .state-msg p {
+      font-size: 0.95rem;
+    }
+
+    /* ─── Modal ──────────────────────────────────────── */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-backdrop.hidden {
+      display: none;
+    }
+
+    .modal {
+      background: white;
+      border-radius: 16px;
+      padding: 28px;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+
+    .modal-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+
+    .modal-field {
+      margin-bottom: 14px;
+    }
+
+    .modal-field label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--gray-500);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+
+    /* ─── Responsive ─────────────────────────────────── */
+    @media (max-width: 640px) {
+      .sidebar { display: none; }
+      .layout { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Tasklr</div>
+  <div class="user-area">
+    <img id="user-avatar" class="user-avatar" src="" alt="" style="display:none">
+    <span id="user-name" class="user-name"></span>
+    <form method="POST" action="/auth/logout">
+      <button type="submit" class="btn-logout">Sign out</button>
+    </form>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-title">My Lists</div>
+    <div id="sidebar-lists">
+      <div class="state-msg" style="padding:20px 0">
+        <p>Loading...</p>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="main-header">
+      <h1 id="list-title" class="list-title">Select a list</h1>
+      <button id="btn-add-task" class="btn-add" onclick="toggleAddForm()" disabled>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Add Task
+      </button>
+    </div>
+
+    <div id="add-task-form" class="add-task-form">
+      <div class="form-row">
+        <input id="new-task-title" class="input" type="text" placeholder="Task title" autocomplete="off">
+      </div>
+      <div class="form-row">
+        <textarea id="new-task-notes" class="input" placeholder="Notes (optional)"></textarea>
+      </div>
+      <div class="form-row">
+        <input id="new-task-due" class="input" type="date" placeholder="Due date (optional)">
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-secondary" onclick="toggleAddForm()">Cancel</button>
+        <button class="btn btn-primary" onclick="createTask()">Add Task</button>
+      </div>
+    </div>
+
+    <div id="task-list" class="task-list">
+      <div class="state-msg">
+        <div class="emoji">☑️</div>
+        <p>Select a task list from the sidebar to get started.</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Edit modal -->
+<div id="edit-modal" class="modal-backdrop hidden">
+  <div class="modal">
+    <h2 class="modal-title">Edit Task</h2>
+    <div class="modal-field">
+      <label>Title</label>
+      <input id="edit-title" class="input" type="text" style="width:100%">
+    </div>
+    <div class="modal-field">
+      <label>Notes</label>
+      <textarea id="edit-notes" class="input" style="width:100%"></textarea>
+    </div>
+    <div class="modal-field">
+      <label>Due Date</label>
+      <input id="edit-due" class="input" type="date" style="width:100%">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEdit()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentListId = null;
+  let currentTasks = [];
+  let editingTaskId = null;
+
+  // ─── Init ───────────────────────────────────────────────
+  async function init() {
+    try {
+      const [user, lists] = await Promise.all([
+        fetch('/api/me').then(r => r.json()),
+        fetch('/api/tasklists').then(r => r.json()),
+      ]);
+
+      if (user.name) {
+        document.getElementById('user-name').textContent = user.name;
+      }
+      if (user.picture) {
+        const img = document.getElementById('user-avatar');
+        img.src = user.picture;
+        img.style.display = 'block';
+      }
+
+      renderSidebar(lists);
+
+      // Auto-select first list
+      if (lists.length > 0) {
+        selectList(lists[0].id, lists[0].title);
+      }
+    } catch (err) {
+      console.error('Init error:', err);
+    }
+  }
+
+  // ─── Sidebar ─────────────────────────────────────────────
+  function renderSidebar(lists) {
+    const container = document.getElementById('sidebar-lists');
+    if (!lists.length) {
+      container.innerHTML = '<div class="state-msg" style="padding:20px 0"><p>No lists found.</p></div>';
+      return;
+    }
+    container.innerHTML = lists.map(list => `
+      <button class="list-item" id="list-btn-${list.id}" onclick="selectList('${list.id}', '${escHtml(list.title)}')">
+        <svg class="list-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"></rect>
+          <rect x="14" y="3" width="7" height="7"></rect>
+          <rect x="3" y="14" width="7" height="7"></rect>
+          <rect x="14" y="14" width="7" height="7"></rect>
+        </svg>
+        ${escHtml(list.title)}
+      </button>
+    `).join('');
+  }
+
+  async function selectList(listId, title) {
+    currentListId = listId;
+    document.getElementById('list-title').textContent = title;
+    document.getElementById('btn-add-task').disabled = false;
+
+    // Update sidebar active state
+    document.querySelectorAll('.list-item').forEach(el => el.classList.remove('active'));
+    const activeBtn = document.getElementById(`list-btn-${listId}`);
+    if (activeBtn) activeBtn.classList.add('active');
+
+    // Close add form
+    document.getElementById('add-task-form').classList.remove('visible');
+
+    await loadTasks(listId);
+  }
+
+  // ─── Tasks ────────────────────────────────────────────────
+  async function loadTasks(listId) {
+    const container = document.getElementById('task-list');
+    container.innerHTML = '<div class="state-msg"><p>Loading tasks...</p></div>';
+    try {
+      const tasks = await fetch(`/api/tasklists/${listId}/tasks`).then(r => r.json());
+      currentTasks = tasks;
+      renderTasks(tasks);
+    } catch (err) {
+      container.innerHTML = '<div class="state-msg"><p>Failed to load tasks.</p></div>';
+    }
+  }
+
+  function renderTasks(tasks) {
+    const container = document.getElementById('task-list');
+    const needsAction = tasks.filter(t => t.status !== 'completed');
+    const completed = tasks.filter(t => t.status === 'completed');
+    const ordered = [...needsAction, ...completed];
+
+    if (!ordered.length) {
+      container.innerHTML = `
+        <div class="state-msg">
+          <div class="emoji">✅</div>
+          <p>No tasks yet. Add one above!</p>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = ordered.map(task => {
+      const isCompleted = task.status === 'completed';
+      const dueDate = task.due ? new Date(task.due) : null;
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      const isOverdue = dueDate && dueDate < today && !isCompleted;
+      const dueDateStr = dueDate ? dueDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+
+      return `
+        <div class="task-card ${isCompleted ? 'completed' : ''}" id="task-${task.id}">
+          <div class="task-checkbox" onclick="toggleComplete('${task.id}', ${isCompleted})">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" width="12" height="12">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
+          <div class="task-content">
+            <div class="task-title">${escHtml(task.title || '(No title)')}</div>
+            ${task.notes ? `<div class="task-notes">${escHtml(task.notes)}</div>` : ''}
+            ${dueDateStr ? `<div class="task-due ${isOverdue ? 'overdue' : ''}">Due: ${dueDateStr}${isOverdue ? ' · Overdue' : ''}</div>` : ''}
+          </div>
+          <div class="task-actions">
+            <button class="icon-btn" onclick="openEditModal('${task.id}')" title="Edit">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            </button>
+            <button class="icon-btn delete" onclick="deleteTask('${task.id}')" title="Delete">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                <path d="M10 11v6M14 11v6"></path>
+                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // ─── Add task ─────────────────────────────────────────────
+  function toggleAddForm() {
+    const form = document.getElementById('add-task-form');
+    form.classList.toggle('visible');
+    if (form.classList.contains('visible')) {
+      document.getElementById('new-task-title').focus();
+    } else {
+      clearAddForm();
+    }
+  }
+
+  function clearAddForm() {
+    document.getElementById('new-task-title').value = '';
+    document.getElementById('new-task-notes').value = '';
+    document.getElementById('new-task-due').value = '';
+  }
+
+  async function createTask() {
+    const title = document.getElementById('new-task-title').value.trim();
+    if (!title) {
+      document.getElementById('new-task-title').focus();
+      return;
+    }
+    const notes = document.getElementById('new-task-notes').value.trim();
+    const due = document.getElementById('new-task-due').value;
+
+    try {
+      const res = await fetch(`/api/tasklists/${currentListId}/tasks`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, notes, due }),
+      });
+      if (!res.ok) throw new Error('Failed');
+      clearAddForm();
+      document.getElementById('add-task-form').classList.remove('visible');
+      await loadTasks(currentListId);
+    } catch (err) {
+      alert('Failed to create task. Please try again.');
+    }
+  }
+
+  // ─── Toggle complete ──────────────────────────────────────
+  async function toggleComplete(taskId, isCompleted) {
+    try {
+      const newStatus = isCompleted ? 'needsAction' : 'completed';
+      await fetch(`/api/tasklists/${currentListId}/tasks/${taskId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      await loadTasks(currentListId);
+    } catch (err) {
+      alert('Failed to update task. Please try again.');
+    }
+  }
+
+  // ─── Delete task ──────────────────────────────────────────
+  async function deleteTask(taskId) {
+    if (!confirm('Delete this task?')) return;
+    try {
+      await fetch(`/api/tasklists/${currentListId}/tasks/${taskId}`, { method: 'DELETE' });
+      await loadTasks(currentListId);
+    } catch (err) {
+      alert('Failed to delete task. Please try again.');
+    }
+  }
+
+  // ─── Edit modal ───────────────────────────────────────────
+  function openEditModal(taskId) {
+    const task = currentTasks.find(t => t.id === taskId);
+    if (!task) return;
+    editingTaskId = taskId;
+    document.getElementById('edit-title').value = task.title || '';
+    document.getElementById('edit-notes').value = task.notes || '';
+    document.getElementById('edit-due').value = task.due ? task.due.split('T')[0] : '';
+    document.getElementById('edit-modal').classList.remove('hidden');
+    document.getElementById('edit-title').focus();
+  }
+
+  function closeEditModal() {
+    editingTaskId = null;
+    document.getElementById('edit-modal').classList.add('hidden');
+  }
+
+  async function saveEdit() {
+    const title = document.getElementById('edit-title').value.trim();
+    if (!title) {
+      document.getElementById('edit-title').focus();
+      return;
+    }
+    const notes = document.getElementById('edit-notes').value.trim();
+    const due = document.getElementById('edit-due').value;
+
+    try {
+      await fetch(`/api/tasklists/${currentListId}/tasks/${editingTaskId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, notes, due }),
+      });
+      closeEditModal();
+      await loadTasks(currentListId);
+    } catch (err) {
+      alert('Failed to save changes. Please try again.');
+    }
+  }
+
+  // ─── Keyboard shortcuts ───────────────────────────────────
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      closeEditModal();
+      document.getElementById('add-task-form').classList.remove('visible');
+    }
+    if (e.key === 'Enter' && document.getElementById('add-task-form').classList.contains('visible') && document.activeElement.id === 'new-task-title') {
+      createTask();
+    }
+  });
+
+  // ─── Close modal on backdrop click ───────────────────────
+  document.getElementById('edit-modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('edit-modal')) closeEditModal();
+  });
+
+  // ─── Utility ──────────────────────────────────────────────
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  init();
+</script>
+</body>
+</html>
