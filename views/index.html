@@ -763,7 +763,23 @@
 
       .layout { padding: 16px; }
     }
-  </style>
+  
+    /* List count badge */
+    .list-count {
+      background: rgba(99,102,241,0.12);
+      color: var(--indigo);
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      margin-left: 8px;
+      flex-shrink: 0;
+    }
+    .list-item.active .list-count {
+      background: var(--indigo);
+      color: white;
+    }
+
+</style>
 </head>
 <body>
 
@@ -950,6 +966,7 @@
           <rect x="14" y="14" width="7" height="7"></rect>
         </svg>
         <span class="list-item-label">${escHtml(list.title)}</span>
+        <span class="list-count" id="list-count-${list.id}">...</span>
         <button class="list-rename-btn" onclick="startRenameList(event, '${list.id}', '${escHtml(list.title)}')" title="Rename list">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -966,6 +983,7 @@
         </button>
       </button>
     `).join('');
+    updateListCounts(lists);
   }
 
   // ─── New list form ────────────────────────────────────────
@@ -1502,6 +1520,27 @@
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
+  }
+
+
+  // ─── Sidebar counts ──────────────────────────────────────
+  async function updateListCounts(lists) {
+    for (const list of lists) {
+      updateListCount(list.id);
+    }
+  }
+
+  async function updateListCount(listId) {
+    const el = document.getElementById(`list-count-${listId}`);
+    if (!el) return;
+    try {
+      const tasks = await fetch(`/api/tasklists/${listId}/tasks`).then(r => r.json());
+      const incomplete = tasks.filter(t => t.status !== 'completed').length;
+      el.textContent = incomplete > 0 ? String(incomplete) : '';
+      el.title = `${incomplete} incomplete task${incomplete === 1 ? '' : 's'}`;
+    } catch (err) {
+      el.textContent = '';
+    }
   }
 
   init();
