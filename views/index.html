@@ -1524,24 +1524,39 @@
 
 
   // ─── Sidebar counts ──────────────────────────────────────
-  async function updateListCounts(lists) {
+async function updateListCounts(lists) {
+  try {
+    const res = await fetch('/api/tasklists/counts');
+    if (!res.ok) throw new Error('Failed to fetch counts');
+    const counts = await res.json();
     for (const list of lists) {
-      updateListCount(list.id);
+      const el = document.getElementById(`list-count-${list.id}`);
+      if (!el) continue;
+      const c = counts[list.id] || 0;
+      el.textContent = c > 0 ? String(c) : '';
+      el.title = `${c} incomplete task${c === 1 ? '' : 's'}`;
+    }
+  } catch (err) {
+    // Fallback: attempt per-list fetch if summary endpoint fails
+    for (const list of lists) {
+      await updateListCount(list.id);
     }
   }
+}
 
-  async function updateListCount(listId) {
-    const el = document.getElementById(`list-count-${listId}`);
-    if (!el) return;
-    try {
-      const tasks = await fetch(`/api/tasklists/${listId}/tasks`).then(r => r.json());
-      const incomplete = tasks.filter(t => t.status !== 'completed').length;
-      el.textContent = incomplete > 0 ? String(incomplete) : '';
-      el.title = `${incomplete} incomplete task${incomplete === 1 ? '' : 's'}`;
-    } catch (err) {
-      el.textContent = '';
-    }
+async function updateListCount(listId) {
+  const el = document.getElementById(`list-count-${listId}`);
+  if (!el) return;
+  try {
+    const tasks = await fetch(`/api/tasklists/${listId}/tasks`).then(r => r.json());
+    const incomplete = tasks.filter(t => t.status !== 'completed').length;
+    el.textContent = incomplete > 0 ? String(incomplete) : '';
+    el.title = `${incomplete} incomplete task${incomplete === 1 ? '' : 's'}`;
+  } catch (err) {
+    el.textContent = '';
   }
+}
+
 
   init();
 </script>
