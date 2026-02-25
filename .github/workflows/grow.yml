@@ -11,9 +11,18 @@ on:
         default: "60"
         type: string
       model:
-        description: "Codex model (optional)"
-        default: ""
-        type: string
+        description: "Model"
+        default: "gpt-5-mini"
+        type: choice
+        options:
+          - gpt-5-mini
+          - gpt-5.2-codex
+          - gpt-5.1-codex
+          - gpt-5-codex
+          - gpt-5.2
+          - gpt-5.1
+          - gpt-5
+          - gpt-5-nano
 
 jobs:
   grow:
@@ -23,6 +32,8 @@ jobs:
       contents: write
       issues: write
       id-token: write
+    env:
+      DEFAULT_MODEL: gpt-5-mini
 
     steps:
       - name: Checkout
@@ -32,7 +43,7 @@ jobs:
         uses: openai/codex-action@v1
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
-          model: ${{ inputs.model || '' }}
+          model: ${{ inputs.model || env.DEFAULT_MODEL }}
           prompt: |
             You are working on the Tasklr project. Read CLAUDE.md for the project goal and constraints.
 
