@@ -45,7 +45,7 @@ jobs:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           model: ${{ inputs.model || env.DEFAULT_MODEL }}
           prompt: |
-            You are working on the Tasklr project. Read CLAUDE.md for the project goal and constraints.
+            You are working on the Tasklr project. Read AGENTS.md for the project goal and constraints.
 
             Read the latest file(s) in updates/ to understand the current state, then decide what to work on next.
             Make incremental progress, test what you can, and create a new sequentially-numbered update file in updates/ when you're done.

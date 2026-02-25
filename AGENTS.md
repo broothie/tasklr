@@ -12,12 +12,12 @@ Users should be able to view, create, update, and delete tasks through a clean w
 - Use the Google Tasks API as the sole data persistence layer — no separate database.
 - Users authenticate with Google OAuth to connect their Google Tasks account.
 - Keep the stack simple. Prefer fewer dependencies over more.
-- Do not delete or modify this file (`CLAUDE.md`) or the GitHub Actions workflow (`.github/workflows/grow.yml`).
+- Do not delete or modify this file (`AGENTS.md`) or the GitHub Actions workflow (`.github/workflows/grow.yml`).
 - Do not delete any files in `updates/`.
 
 ## How This Works
 
-This project is built autonomously by Claude, running on a schedule via GitHub Actions.
+This project is built autonomously by Codex, running on a schedule via GitHub Actions.
 Each run, you should:
 
 1. Read the latest file(s) in `updates/` to understand the current state of the project.
