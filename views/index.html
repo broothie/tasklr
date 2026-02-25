@@ -690,6 +690,53 @@
     .list-rename-btn svg { width: 13px; height: 13px; }
     .list-item:hover .list-rename-btn { display: block; }
 
+    /* ─── Filter bar ─────────────────────────────────── */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .filter-bar .input {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .filter-tabs {
+      display: flex;
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .filter-tab {
+      background: none;
+      border: none;
+      padding: 8px 14px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--gray-500);
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+
+    .filter-tab:not(:last-child) {
+      border-right: 1px solid var(--gray-200);
+    }
+
+    .filter-tab.active {
+      background: var(--indigo);
+      color: white;
+    }
+
+    .filter-tab:not(.active):hover {
+      background: var(--gray-100);
+      color: var(--gray-700);
+    }
+
     /* ─── Responsive ─────────────────────────────────── */
     @media (max-width: 640px) {
       .btn-menu { display: flex; }
@@ -808,6 +855,16 @@
       </div>
     </div>
 
+    <div id="filter-bar" class="filter-bar" style="display:none">
+      <input type="search" id="search-input" class="input" placeholder="Search tasks..."
+             oninput="setSearch(this.value)" autocomplete="off">
+      <div class="filter-tabs">
+        <button class="filter-tab active" id="filter-all" onclick="setFilter('all')">All</button>
+        <button class="filter-tab" id="filter-active" onclick="setFilter('active')">Active</button>
+        <button class="filter-tab" id="filter-completed" onclick="setFilter('completed')">Completed</button>
+      </div>
+    </div>
+
     <div id="task-list" class="task-list">
       <div class="state-msg">
         <div class="emoji">☑️</div>
@@ -846,6 +903,8 @@
   let currentListId = null;
   let currentTasks = [];
   let editingTaskId = null;
+  let searchQuery = '';
+  let statusFilter = 'all';
 
   // ─── Init ───────────────────────────────────────────────
   async function init() {
@@ -961,6 +1020,7 @@
         document.getElementById('btn-add-task').disabled = true;
         document.getElementById('btn-clear-completed').style.display = 'none';
         document.getElementById('add-task-form').classList.remove('visible');
+        document.getElementById('filter-bar').style.display = 'none';
         document.getElementById('task-list').innerHTML = `
           <div class="state-msg">
             <div class="emoji">☑️</div>
@@ -982,6 +1042,15 @@
     document.getElementById('list-title').textContent = title;
     document.getElementById('btn-add-task').disabled = false;
 
+    // Reset search and filter state when switching lists
+    searchQuery = '';
+    statusFilter = 'all';
+    document.getElementById('search-input').value = '';
+    document.querySelectorAll('.filter-tab').forEach(btn => {
+      btn.classList.toggle('active', btn.id === 'filter-all');
+    });
+    document.getElementById('filter-bar').style.display = 'flex';
+
     // Update sidebar active state
     document.querySelectorAll('.list-item').forEach(el => el.classList.remove('active'));
     const activeBtn = document.getElementById(`list-btn-${listId}`);
@@ -994,6 +1063,41 @@
     await loadTasks(listId);
   }
 
+  // ─── Search & filter ──────────────────────────────────────
+  function getFilteredTasks() {
+    let tasks = currentTasks;
+    if (statusFilter === 'active') {
+      tasks = tasks.filter(t => t.status !== 'completed');
+    } else if (statusFilter === 'completed') {
+      tasks = tasks.filter(t => t.status === 'completed');
+    }
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      tasks = tasks.filter(t =>
+        (t.title || '').toLowerCase().includes(q) ||
+        (t.notes || '').toLowerCase().includes(q)
+      );
+    }
+    return tasks;
+  }
+
+  function applyFilters() {
+    renderTasks(getFilteredTasks());
+  }
+
+  function setSearch(query) {
+    searchQuery = query;
+    applyFilters();
+  }
+
+  function setFilter(filter) {
+    statusFilter = filter;
+    document.querySelectorAll('.filter-tab').forEach(btn => {
+      btn.classList.toggle('active', btn.id === `filter-${filter}`);
+    });
+    applyFilters();
+  }
+
   // ─── Tasks ────────────────────────────────────────────────
   async function loadTasks(listId) {
     const container = document.getElementById('task-list');
@@ -1001,7 +1105,7 @@
     try {
       const tasks = await fetch(`/api/tasklists/${listId}/tasks`).then(r => r.json());
       currentTasks = tasks;
-      renderTasks(tasks);
+      applyFilters();
     } catch (err) {
       container.innerHTML = '<div class="state-msg"><p>Failed to load tasks.</p></div>';
     }
@@ -1042,15 +1146,17 @@
     const completed = tasks.filter(t => t.status === 'completed');
     const ordered = [...needsAction, ...completed];
 
-    // Show/hide clear completed button
+    // Show/hide clear completed button (based on all tasks, not just the filtered set)
     const clearBtn = document.getElementById('btn-clear-completed');
-    clearBtn.style.display = completed.length > 0 ? 'inline-flex' : 'none';
+    const hasCompleted = currentTasks.some(t => t.status === 'completed');
+    clearBtn.style.display = hasCompleted ? 'inline-flex' : 'none';
 
     if (!ordered.length) {
+      const isFiltered = searchQuery || statusFilter !== 'all';
       container.innerHTML = `
         <div class="state-msg">
-          <div class="emoji">✅</div>
-          <p>No tasks yet. Add one above!</p>
+          <div class="emoji">${isFiltered ? '🔍' : '✅'}</div>
+          <p>${isFiltered ? 'No tasks match your search.' : 'No tasks yet. Add one above!'}</p>
         </div>
       `;
       return;
@@ -1369,6 +1475,16 @@
       }
       if (document.getElementById('new-list-form').classList.contains('visible') && document.activeElement.id === 'new-list-name') {
         createList();
+      }
+    }
+    // 'n' to open add task form (when not typing in an input)
+    if (e.key === 'n') {
+      const inInput = e.target.matches('input, textarea, [contenteditable]');
+      const modalOpen = !document.getElementById('edit-modal').classList.contains('hidden');
+      const addFormOpen = document.getElementById('add-task-form').classList.contains('visible');
+      if (!inInput && !modalOpen && !addFormOpen && currentListId) {
+        e.preventDefault();
+        toggleAddForm();
       }
     }
   });
