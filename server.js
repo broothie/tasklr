@@ -373,6 +373,29 @@ app.get('/api/me', requireAuth, (req, res) => {
 // ─── Start ───────────────────────────────────────────────────────────────────
 
 
+// Status endpoint (helps readiness checks without auth)
+app.get('/api/status', (req, res) => {
+  try {
+    const pkg = require('./package.json');
+    const envChecks = {
+      google_client_id: !!process.env.GOOGLE_CLIENT_ID,
+      google_client_secret: !!process.env.GOOGLE_CLIENT_SECRET,
+      session_secret: !!process.env.SESSION_SECRET,
+    };
+    res.json({
+      name: pkg.name,
+      version: pkg.version,
+      node: process.version,
+      baseUrl: BASE_URL,
+      env: envChecks,
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'status_unavailable' });
+  }
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
