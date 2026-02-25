@@ -7,17 +7,13 @@ on:
   workflow_dispatch:
     inputs:
       max_turns:
-        description: "Max turns for Claude"
+        description: "Max turns for Codex"
         default: "60"
         type: string
       model:
-        description: "Claude model"
-        default: "sonnet"
-        type: choice
-        options:
-          - opus
-          - sonnet
-          - haiku
+        description: "Codex model (optional)"
+        default: ""
+        type: string
 
 jobs:
   grow:
@@ -28,25 +24,15 @@ jobs:
       issues: write
       id-token: write
 
-    env:
-      MODEL_CHOICE: ${{ inputs.model || 'sonnet' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Resolve model
-        id: model
-        run: |
-          case "$MODEL_CHOICE" in
-            haiku)   echo "id=claude-haiku-4-5-20251001" >> $GITHUB_OUTPUT ;;
-            sonnet)  echo "id=claude-sonnet-4-6" >> $GITHUB_OUTPUT ;;
-            opus)    echo "id=claude-opus-4-6" >> $GITHUB_OUTPUT ;;
-          esac
-
-      - name: Run Claude
-        uses: anthropics/claude-code-action@v1
+      - name: Run Codex
+        uses: openai/codex-action@v1
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          model: ${{ inputs.model || '' }}
           prompt: |
             You are working on the Tasklr project. Read CLAUDE.md for the project goal and constraints.
 
@@ -57,14 +43,12 @@ jobs:
             Budget your work accordingly — commit early and often, and write your update file well before you run out.
             Keep track of your turns by outputting the current turn count somewhere in each turn's output.
             Try to finish working with 10 turns to spare.
-            Take note of how many turns different updates required, and use that as a guage for deciding what to work on.
+            Take note of how many turns different updates required, and use that as a gauge for deciding what to work on.
             Be sure to include how many turns you took when writing the update file.
 
             Commit your changes with a clear commit message.
-          claude_args: |
-            --allowedTools "Bash,Read,Write,Edit,Glob,Grep,TodoWrite"
+          codex-args: |
             --max-turns ${{ inputs.max_turns || '150' }}
-            --model ${{ steps.model.outputs.id }}
 
       - name: Push changes
         run: |
