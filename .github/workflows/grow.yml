@@ -58,9 +58,6 @@ jobs:
             Be sure to include how many turns you took when writing the update file.
 
             Commit your changes with a clear commit message.
-          codex-args: |
-            --max-turns ${{ inputs.max_turns || '150' }}
-
       - name: Push changes
         run: |
           git remote set-url origin https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git
