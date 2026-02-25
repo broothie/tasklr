@@ -372,6 +372,12 @@ app.get('/api/me', requireAuth, (req, res) => {
 
 // ─── Start ───────────────────────────────────────────────────────────────────
 
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 app.listen(PORT, () => {
   console.log(`Tasklr running at ${BASE_URL}`);
 });
