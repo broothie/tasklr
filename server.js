@@ -3,6 +3,8 @@ const express = require('express');
 const session = require('express-session');
 const { google } = require('googleapis');
 const path = require('path');
+const fs = require('fs');
+const FileStore = require('session-file-store')(session);
 
 const app = express();
 
@@ -29,8 +31,13 @@ function createOAuthClient() {
 }
 
 // Session middleware
+// Ensure sessions directory exists for file-based session store
+const SESSIONS_DIR = path.join(__dirname, 'sessions');
+if (!fs.existsSync(SESSIONS_DIR)) fs.mkdirSync(SESSIONS_DIR, { recursive: true });
+
 app.use(session({
   secret: process.env.SESSION_SECRET || 'dev-secret-change-in-prod',
+  store: new FileStore({ path: SESSIONS_DIR, ttl: 7*24*60*60, logFn: function(){} }),
   resave: false,
   saveUninitialized: false,
   cookie: {
