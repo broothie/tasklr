@@ -5,6 +5,17 @@ const { google } = require('googleapis');
 const path = require('path');
 
 const app = express();
+
+// Security / proxy settings
+// When running behind a proxy (e.g., in production), trust the first proxy so
+// secure cookies work correctly and client IPs are set on req.ip.
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
+// Hide X-Powered-By header for slightly better security posture
+app.disable('x-powered-by');
+
 const PORT = process.env.PORT || 3000;
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 
