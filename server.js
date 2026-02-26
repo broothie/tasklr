@@ -421,18 +421,63 @@ app.get('/api/readiness', async (req, res) => {
     return res.json({ status: 'ok', timestamp: new Date().toISOString() });
   }
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 2000);
-  try {
-    const url = 'https://www.googleapis.com/discovery/v1/apis/tasks/v1/rest';
-    const resp = await fetch(url, { signal: controller.signal });
-    clearTimeout(timeout);
-    if (resp.ok) {
-      return res.json({ status: 'ok', google_api: { ok: true, status: resp.status }, timestamp: new Date().toISOString() });
+  // If an authenticated refresh token is provided we will try a minimal
+  // authenticated probe (refresh + list tasklists) to verify OAuth flow.
+  const authRefreshToken = process.env.READINESS_CHECK_GOOGLE_AUTH_REFRESH_TOKEN;
+
+  // Helper: timeout wrapper
+  function withTimeout(promise, ms) {
+    return Promise.race([
+      promise,
+      new Promise((_, rej) => setTimeout(() => rej(new Error('probe_timeout')), ms)),
+    ]);
+  }
+
+  if (authRefreshToken) {
+    try {
+      const oauth2Client = createOAuthClient();
+      // Attach only the refresh token so client can refresh an access token.
+      oauth2Client.setCredentials({ refresh_token: authRefreshToken });
+
+      // Try refreshing and calling the Tasks API within 3s.
+      const probe = (async () => {
+        // Refresh access token
+        if (typeof oauth2Client.refreshAccessToken === 'function') {
+          // older googleapis helper (returns {credentials})
+          const refreshed = await oauth2Client.refreshAccessToken();
+          oauth2Client.setCredentials(refreshed.credentials || refreshed);
+        } else if (typeof oauth2Client.getAccessToken === 'function') {
+          // newer googleapis may provide getAccessToken; call it to trigger refresh
+          await oauth2Client.getAccessToken();
+        }
+
+        const tasks = google.tasks({ version: 'v1', auth: oauth2Client });
+        const resp = await tasks.tasklists.list({ maxResults: 1 });
+        return resp;
+      })();
+
+      const resp = await withTimeout(probe, 3000);
+      if (resp && resp.data) {
+        return res.json({ status: 'ok', google_api: { ok: true, authenticated: true }, timestamp: new Date().toISOString() });
+      }
+      return res.status(502).json({ status: 'fail', google_api: { ok: false, authenticated: true }, timestamp: new Date().toISOString() });
+    } catch (err) {
+      return res.status(502).json({ status: 'fail', google_api: { ok: false, authenticated: true, error: err && err.message }, timestamp: new Date().toISOString() });
     }
-    return res.status(502).json({ status: 'fail', google_api: { ok: false, status: resp.status }, timestamp: new Date().toISOString() });
-  } catch (err) {
+  }
+
+  // Fallback: perform a lightweight unauthenticated probe of the discovery doc.
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 2000);
+    const url = 'https://www.googleapis.com/discovery/v1/apis/tasks/v1/rest';
+    const resp = await withTimeout(fetch(url, { signal: controller.signal }), 2500);
     clearTimeout(timeout);
+    if (resp && resp.ok) {
+      return res.json({ status: 'ok', google_api: { ok: true, authenticated: false, status: resp.status }, timestamp: new Date().toISOString() });
+    }
+    return res.status(502).json({ status: 'fail', google_api: { ok: false, authenticated: false, status: resp && resp.status }, timestamp: new Date().toISOString() });
+  } catch (err) {
     return res.status(502).json({ status: 'fail', error: 'google_api_unreachable', message: err && err.message, timestamp: new Date().toISOString() });
   }
 });
