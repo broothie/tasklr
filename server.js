@@ -412,6 +412,31 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+
+// Readiness endpoint (optional Google probe)
+app.get('/api/readiness', async (req, res) => {
+  // If the env var is not set the endpoint returns a lightweight OK.
+  const doProbe = !!(process.env.READINESS_CHECK_GOOGLE && String(process.env.READINESS_CHECK_GOOGLE) !== '0' && String(process.env.READINESS_CHECK_GOOGLE).toLowerCase() !== 'false');
+  if (!doProbe) {
+    return res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 2000);
+  try {
+    const url = 'https://www.googleapis.com/discovery/v1/apis/tasks/v1/rest';
+    const resp = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (resp.ok) {
+      return res.json({ status: 'ok', google_api: { ok: true, status: resp.status }, timestamp: new Date().toISOString() });
+    }
+    return res.status(502).json({ status: 'fail', google_api: { ok: false, status: resp.status }, timestamp: new Date().toISOString() });
+  } catch (err) {
+    clearTimeout(timeout);
+    return res.status(502).json({ status: 'fail', error: 'google_api_unreachable', message: err && err.message, timestamp: new Date().toISOString() });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Tasklr running at ${BASE_URL}`);
 });
