@@ -79,9 +79,32 @@ async function refreshTokensIfNeeded(session) {
     try {
       const oauth2Client = createOAuthClient();
       oauth2Client.setCredentials(session.tokens);
-      const { credentials } = await oauth2Client.refreshAccessToken();
-      session.tokens = credentials;
-      return credentials;
+
+      // Older googleapis helper
+      if (typeof oauth2Client.refreshAccessToken === 'function') {
+        const refreshed = await oauth2Client.refreshAccessToken();
+        const credentials = refreshed && refreshed.credentials ? refreshed.credentials : refreshed;
+        session.tokens = credentials;
+        return credentials;
+      }
+
+      // Newer googleapis - calling getAccessToken may trigger an automatic refresh
+      if (typeof oauth2Client.getAccessToken === 'function') {
+        await oauth2Client.getAccessToken();
+        const credentials = oauth2Client.credentials || session.tokens;
+        session.tokens = credentials;
+        return credentials;
+      }
+
+      // Fallback: if refresh_token is available try refreshToken
+      if (refresh_token && typeof oauth2Client.refreshToken === 'function') {
+        const refreshed = await oauth2Client.refreshToken(refresh_token);
+        const credentials = refreshed && refreshed.credentials ? refreshed.credentials : refreshed;
+        session.tokens = credentials;
+        return credentials;
+      }
+
+      return null;
     } catch (err) {
       console.error('Token refresh failed:', err);
       return null;
