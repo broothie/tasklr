@@ -388,6 +388,35 @@ app.get('/api/me', requireAuth, (req, res) => {
   res.json(req.session.user || {});
 });
 
+
+// ─── API: Export all lists and tasks ───────────────────────────────────────
+app.get('/api/export', requireAuth, async (req, res) => {
+  try {
+    const tasks = getTasksClient(req.session.tokens);
+    const listsResp = await tasks.tasklists.list({ maxResults: 100 });
+    const lists = listsResp.data.items || [];
+    const output = [];
+    for (const list of lists) {
+      const items = [];
+      let pageToken = null;
+      do {
+        const params = { tasklist: list.id, showCompleted: true, showHidden: false, maxResults: 100 };
+        if (pageToken) params.pageToken = pageToken;
+        const resp = await tasks.tasks.list(params);
+        const pageItems = resp.data.items || [];
+        items.push(...pageItems);
+        pageToken = resp.data.nextPageToken;
+      } while (pageToken);
+      output.push({ id: list.id, title: list.title, tasks: items });
+    }
+    res.json({ lists: output });
+  } catch (err) {
+    if (handleApiError(err, req, res)) return;
+    console.error('Error exporting tasks:', err && err.message);
+    res.status(500).json({ error: 'Failed to export tasks' });
+  }
+});
+
 // ─── Start ───────────────────────────────────────────────────────────────────
 
 
