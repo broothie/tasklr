@@ -1,4 +1,10 @@
-try { require('dotenv').config(); } catch (err) { /* dotenv not installed in this environment */ }
+try {
+  require('dotenv').config();
+} catch (err) {
+  // Only ignore if the module truly isn't installed — rethrow other errors.
+  if (!err || err.code !== 'MODULE_NOT_FOUND') throw err;
+}
+
 const express = require('express');
 const session = require('express-session');
 const { google } = require('googleapis');
