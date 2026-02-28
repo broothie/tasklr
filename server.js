@@ -129,20 +129,43 @@ function getTasksClient(tokens) {
 
 // Helper: handle API errors and check for auth failures
 function handleApiError(err, req, res) {
-  if (err.status === 401) {
+  // Normalize different error shapes from googleapis / http libs
+  function extractStatus(e) {
+    if (!e) return null;
+    if (typeof e.status === 'number') return e.status;
+    if (typeof e.statusCode === 'number') return e.statusCode;
+    // Some googleapis errors include a response object
+    if (e.response && typeof e.response.status === 'number') return e.response.status;
+    // Axios-style error may have status on e.response.status
+    if (e.code && typeof e.code === 'number') return e.code;
+    return null;
+  }
+
+  const status = extractStatus(err);
+  // Log full error for debugging
+  console.error('API error:', err && (err.message || err));
+
+  if (status === 401) {
     // Token is revoked or invalid
-    req.session.destroy(() => {
+    try {
+      req.session && req.session.destroy && req.session.destroy(() => {});
+    } catch (e) {}
+    // If this is an HTML route redirect, prefer redirect; otherwise JSON
+    if (req && req.headers && req.headers.accept && req.headers.accept.indexOf('text/html') !== -1) {
+      res.redirect('/login?error=auth_required');
+    } else {
       res.status(401).json({ error: 'Authentication failed. Please sign in again.' });
-    });
+    }
     return true;
   }
-  if (err.status === 403) {
-    console.error('Permission denied:', err);
+  if (status === 403) {
+    console.error('Permission denied (403)');
     res.status(403).json({ error: 'Permission denied' });
     return true;
   }
   return false;
 }
+
 
 // ─── Auth routes ────────────────────────────────────────────────────────────
 
