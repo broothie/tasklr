@@ -24,6 +24,15 @@ if (process.env.NODE_ENV === 'production') {
 // Hide X-Powered-By header for slightly better security posture
 app.disable('x-powered-by');
 
+// Basic security headers to improve security posture
+app.use((req, res, next) => {
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'no-referrer-when-downgrade');
+  res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+  next();
+});
+
 const PORT = process.env.PORT || 3000;
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 
