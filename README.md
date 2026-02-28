@@ -23,6 +23,15 @@ Notes
 - Sessions are stored on disk in the `sessions/` directory by default.
 - The project intentionally uses the Google Tasks API as the single data store — there is no separate database.
 
+Environment and `dotenv` behavior
+
+- The code calls `require('dotenv').config()` at startup to load environment variables from a local `.env` file when available.
+- The server tolerates the *absence* of the `dotenv` package (e.g., in production builds where environment variables are provided by the platform) and will continue to start if `dotenv` is not installed.
+- However, errors thrown by `dotenv` during parsing (for example, a malformed `.env` file) are *not* silently ignored — they will be rethrown so the process fails fast during development. This helps catch configuration mistakes early.
+
+- To validate the server's startup syntax without running the HTTP server you can run:
+  - `node --check server.js`
+
 Files of interest
 
 - `server.js` - main Express server and API routes
