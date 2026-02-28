@@ -31,7 +31,7 @@ app.use((req, res, next) => {
   res.setHeader('Referrer-Policy', 'no-referrer-when-downgrade');
   res.setHeader('X-Robots-Tag', 'noindex, nofollow');
   // Content Security Policy: conservative defaults; adjust as UI/resources evolve
-  res.setHeader(Content-Security-Policy, "default-src self https: data:; script-src self unsafe-inline https:; style-src self unsafe-inline https:; img-src self data:; connect-src self https://www.googleapis.com https://*.googleapis.com; frame-ancestors none");
+  res.setHeader('Content-Security-Policy', "default-src 'self' https: data:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data:; connect-src 'self' https://www.googleapis.com https://*.googleapis.com; frame-ancestors 'none'");
   next();
 });
 
