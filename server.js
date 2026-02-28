@@ -1,4 +1,4 @@
-require('dotenv').config();
+try { require('dotenv').config(); } catch (err) { /* dotenv not installed in this environment */ }
 const express = require('express');
 const session = require('express-session');
 const { google } = require('googleapis');
