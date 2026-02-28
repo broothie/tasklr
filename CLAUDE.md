@@ -12,11 +12,11 @@ Users should be able to view, create, update, and delete tasks through a clean w
 - Use the Google Tasks API as the sole data persistence layer — no separate database.
 - Users authenticate with Google OAuth to connect their Google Tasks account.
 - Keep the stack simple. Prefer fewer dependencies over more.
-- Do not delete or modify this file (`AGENTS.md`) or the GitHub Actions workflow (`.github/workflows/grow.yml`).
+- Do not delete or modify this file (`CLAUDE.md`) or the GitHub Actions workflow (`.github/workflows/claude.yml`).
 
 ## How This Works
 
-This project is built autonomously by Codex, running on a schedule via GitHub Actions.
+This project is built autonomously by Claude, running on a schedule via GitHub Actions.
 Each run, you should:
 
 1. Check for open GitHub issues created by the repo owner (@broothie). If any exist, prioritize addressing them before deciding what to work on independently.
@@ -24,7 +24,7 @@ Each run, you should:
 3. Decide what to work on next.
 4. Make your changes — write code, install dependencies, create files, etc.
 5. Test your changes if possible (linting, type checking, build, etc.).
-6. Commit your changes directly to `main` with a detailed commit message. The message should describe what changed, why, and what logical next steps are — this is how future runs will pick up context. A separate push action will follow your run.
+6. Commit your changes directly to `main` with a detailed commit message. The message should describe what changed, why, and what logical next steps are — this is how future runs will pick up context.
 
 ## Getting Help
 
@@ -32,7 +32,6 @@ If you get stuck on something that requires outside help (e.g. missing secrets, 
 
 ## Guidelines
 
-- **Do not use plan mode.** Jump straight into making changes — you are running autonomously with no user to approve plans.
 - Make incremental progress each run. Don't try to do everything at once.
 - Prefer working, minimal implementations over ambitious incomplete ones.
 - If something is broken, fix it before adding new features.
