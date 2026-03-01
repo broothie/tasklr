@@ -476,7 +476,7 @@ app.get('/api/export', requireAuth, async (req, res) => {
       const ts = new Date().toISOString().replace(/[:.]/g, '-');
       const filename = 'tasklr-export-' + ts + '.json';
       res.setHeader('Content-Type', 'application/json');
-      res.setHeader('Content-Disposition', 'attachment; filename= + filename + ');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
       res.send(JSON.stringify({ lists: output }, null, 2));
     } else {
       res.json({ lists: output });
