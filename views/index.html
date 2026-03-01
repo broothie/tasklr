@@ -797,6 +797,7 @@
   <div class="user-area">
     <img id="user-avatar" class="user-avatar" src="" alt="" style="display:none">
     <span id="user-name" class="user-name"></span>
+    <a id="btn-export" class="btn btn-secondary" href="#" onclick="downloadExport();return false;" title="Export all lists">Export</a>
     <form method="POST" action="/auth/logout">
       <button type="submit" class="btn-logout">Sign out</button>
     </form>
@@ -1571,6 +1572,29 @@
     }
   }
 
+
+  async function downloadExport() {
+    try {
+      const res = await fetch('/api/export?download=1');
+      if (!res.ok) throw new Error('Export failed');
+      const cd = res.headers.get('Content-Disposition') || '';
+      let filename = 'tasklr-export.json';
+      const m = /filename=\"?([^\";]+)\"?/.exec(cd);
+      if (m) filename = m[1];
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      showToast('Export downloaded', 'success');
+    } catch (err) {
+      showToast('Failed to export tasks', 'error');
+    }
+  }
 
   init();
 </script>
