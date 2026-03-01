@@ -9,15 +9,16 @@ function makeFilename() {
 
 function makeHeaders(filename) {
   return {
-    'Content-Type': 'application/json',
-    'Content-Disposition': `attachment; filename="${filename}"`
+    'Content-Type': 'application/json; charset=utf-8',
+    'Content-Disposition': `attachment; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(filename)}`
   };
 }
 
 // Test header formatting
 const filename = makeFilename();
 const headers = makeHeaders(filename);
-if (!/^attachment;\s*filename="tasklr-export-/.test(headers['Content-Disposition'])) {
+// Accept either a basic ASCII `filename="..."` or the RFC5987 `filename*=` form.
+if (!/^attachment;\s*(filename\s*=|.*filename\*=)/.test(headers['Content-Disposition'])) {
   console.error('Header format unexpected:', headers['Content-Disposition']);
   process.exitCode = 2;
 } else {

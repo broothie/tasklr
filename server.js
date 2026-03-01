@@ -475,8 +475,11 @@ app.get('/api/export', requireAuth, async (req, res) => {
     if (req.query && req.query.download === '1') {
       const ts = new Date().toISOString().replace(/[:.]/g, '-');
       const filename = 'tasklr-export-' + ts + '.json';
-      res.setHeader('Content-Type', 'application/json');
-      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      // `filename` provides a basic ASCII fallback; `filename*` carries the UTF-8
+      // encoded value per RFC5987. Some clients ignore filename*; having both
+      // increases compatibility.
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(filename)}`);
       res.send(JSON.stringify({ lists: output }, null, 2));
     } else {
       res.json({ lists: output });
