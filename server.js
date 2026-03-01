@@ -472,7 +472,15 @@ app.get('/api/export', requireAuth, async (req, res) => {
       } while (pageToken);
       output.push({ id: list.id, title: list.title, tasks: items });
     }
-    res.json({ lists: output });
+    if (req.query && req.query.download === '1') {
+      const ts = new Date().toISOString().replace(/[:.]/g, '-');
+      const filename = 'tasklr-export-' + ts + '.json';
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', 'attachment; filename= + filename + ');
+      res.send(JSON.stringify({ lists: output }, null, 2));
+    } else {
+      res.json({ lists: output });
+    }
   } catch (err) {
     if (handleApiError(err, req, res)) return;
     console.error('Error exporting tasks:', err && err.message);
