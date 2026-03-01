@@ -488,7 +488,26 @@ app.get('/api/export', requireAuth, async (req, res) => {
   }
 });
 
-// ─── Start ───────────────────────────────────────────────────────────────────
+// --- Test-only routes (enabled by setting ALLOW_TEST_ROUTES=1) ---
+// These routes are intentionally lightweight helpers used by automated
+// smoke tests in CI or local development so we can validate behaviors that
+// require an authenticated session without performing real OAuth flows.
+if (process.env.ALLOW_TEST_ROUTES === '1') {
+  app.get('/__test/export', (req, res) => {
+    const sample = { lists: [{ id: 'test-list', title: 'Test List', tasks: [{ id: 't1', title: 'Sample Task' }] }] };
+    if (req.query && req.query.download === '1') {
+      const ts = new Date().toISOString().replace(/[:.]/g, '-');
+      const filename = 'tasklr-export-' + ts + '.json';
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.send(JSON.stringify(sample, null, 2));
+    } else {
+      res.json(sample);
+    }
+  });
+}
+
+// ─── Start// ─── Start ───────────────────────────────────────────────────────────────────
 
 
 // Status endpoint (helps readiness checks without auth)
