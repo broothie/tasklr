@@ -19,7 +19,7 @@ const tests = [
   },
   {
     cd: "attachment; filename*=latin1''%A3-pound.json",
-    want: null
+    want: '£-pound.json'
   },
   {
     cd: '',
