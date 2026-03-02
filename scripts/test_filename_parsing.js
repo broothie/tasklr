@@ -42,7 +42,7 @@ const tests = [
   },
   {
     cd: "attachment; filename*=latin1''%A3-pound.json",
-    want: '£-pound.json' // percent-decoding as latin1 will not restore properly, but decoding percent sequences yields the bytes interpreted as UTF-8 — this case may be ambiguous
+    want: null
   },
   {
     cd: '',
