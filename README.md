@@ -38,6 +38,17 @@ Files of interest
 - `views/` - frontend HTML/CSS/JS
 - `package.json` - dependencies and scripts
 
+Tests
+
+- The repository includes a focused unit-style check for filename parsing used when processing `Content-Disposition` headers. Run the check with:
+  - `npm test` (runs the `test:filename-parsing` script)
+
+- There are additional smoke test scripts related to export/download behavior:
+  - `npm run smoke-export` (requires network and appropriate credentials)
+  - `npm run smoke-export-local` (local-only variant)
+
+- Note: some tests and smoke scripts require environment variables (see the top of this README) and network access to Google APIs. Use the `--silent` or CI-friendly invocation when integrating into automated runs.
+
 Contributing
 
 This project is developed by an automated agent (Codex). Make small, incremental changes and add an entry to `updates/` for each run.
