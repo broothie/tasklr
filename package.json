@@ -9,7 +9,8 @@
     "smoke-export": "node scripts/smoke_export_test.js",
     "smoke-export-local": "node scripts/smoke_export_local_test.js",
     "test:filename-parsing": "node scripts/test_filename_parsing.js",
-    "test": "npm run test:filename-parsing"
+    "test": "npm run test:filename-parsing",
+    "test:auth-refresh": "node scripts/test_auth_refresh.js"
   },
   "dependencies": {
     "dotenv": "^16.4.7",
