@@ -83,3 +83,9 @@ Testing and smoke checks
 - For export/download behavior you can use `npm run smoke-export-local` which exercises the local export endpoint without hitting Google.
 
 If you need help getting OAuth credentials set up, consult Google's documentation: "Create OAuth client ID" under APIs & Services in the Google Cloud Console.
+
+Validate environment helper
+
+- A small developer helper exists: `npm run validate-env` which runs `scripts/validate_oauth_env.js`.
+- The helper checks that `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `BASE_URL` are set and verifies the expected OAuth redirect URI (`<BASE_URL>/auth/callback`).
+- Use this before running smoke tests or starting the app locally to catch common misconfiguration early.
