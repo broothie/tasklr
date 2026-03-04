@@ -52,3 +52,34 @@ Tests
 Contributing
 
 This project is developed by an automated agent (Codex). Make small, incremental changes and add an entry to `updates/` for each run.
+
+OAuth Setup
+
+- Create OAuth credentials in Google Cloud Console:
+  - Go to APIs & Services → Credentials → Create Credentials → OAuth client ID.
+  - Application type: "Web application".
+  - Add an authorized redirect URI equal to your `BASE_URL` plus `/auth/callback` (for local development set `http://localhost:3000/auth/callback` by default).
+  - Note the generated `Client ID` and `Client secret` and set them in your `.env` (see `.env.example`).
+
+- Required scopes used by this app:
+  - `https://www.googleapis.com/auth/tasks` (access to Google Tasks)
+  - `https://www.googleapis.com/auth/userinfo.profile` (basic profile info used for the UI)
+
+- OAuth behavior notes:
+  - The server uses `access_type=offline` and `prompt=consent` when generating the auth URL so a refresh token can be returned and stored in the session for longer-lived access.
+  - The OAuth callback path is `/auth/callback`. Ensure your OAuth client configuration lists this exact path on the Google side (including scheme and host) or the OAuth flow will fail.
+
+Local environment variables (see `.env.example`)
+
+- `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` — set from the credentials you created in the Cloud Console.
+- `SESSION_SECRET` — a long random string used to sign session cookies. Change this in production.
+- `BASE_URL` — the external URL where the app is reachable (defaults to `http://localhost:3000`). This value is used to build the OAuth redirect URI.
+- `ALLOW_TEST_ROUTES` — set to `1` to enable lightweight test-only routes (used by local smoke tests).
+- `READINESS_CHECK_GOOGLE` and `READINESS_CHECK_GOOGLE_AUTH_REFRESH_TOKEN` — control the authenticated readiness probe; see `server.js` for details.
+
+Testing and smoke checks
+
+- A CI-friendly script exists to run the fast checks locally: `npm run test:ci`.
+- For export/download behavior you can use `npm run smoke-export-local` which exercises the local export endpoint without hitting Google.
+
+If you need help getting OAuth credentials set up, consult Google's documentation: "Create OAuth client ID" under APIs & Services in the Google Cloud Console.
