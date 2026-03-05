@@ -23,7 +23,8 @@ try {
   }
 }
 
-const required = ['GOOGLE_CLIENT_ID','GOOGLE_CLIENT_SECRET','BASE_URL'];
+// Require these env vars for a minimally functional server
+const required = ['GOOGLE_CLIENT_ID','GOOGLE_CLIENT_SECRET','BASE_URL','SESSION_SECRET'];
 let ok = true;
 for (const k of required) {
   if (!process.env[k]) {
@@ -35,8 +36,16 @@ if (!ok) {
   console.error('\nPlease create a .env file with the variables above, or export them in your environment.');
   process.exit(2);
 }
+
+// Check BASE_URL shape
+const baseRaw = process.env.BASE_URL || '';
+const base = baseRaw.replace(/\/$/, '');
+if (!/^https?:\/\//i.test(base)) {
+  console.warn('BASE_URL does not look like a full URL (missing http:// or https://):', baseRaw);
+  console.warn('It is recommended to include the scheme, e.g. http://localhost:3000');
+}
+
 // Check redirect URI
-const base = process.env.BASE_URL.replace(/\/$/,'');
 const expected = base + '/auth/callback';
 const redirectUris = (process.env.GOOGLE_REDIRECT_URIS || '').split(',').map(s=>s.trim()).filter(Boolean);
 const found = redirectUris.includes(expected) || process.env.GOOGLE_REDIRECT_URI === expected;
@@ -51,6 +60,7 @@ if (found) {
   console.warn('  GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com');
   console.warn('  GOOGLE_CLIENT_SECRET=your-secret');
   console.warn('  BASE_URL=http://localhost:3000');
+  console.warn('  SESSION_SECRET=a-long-random-string');
   console.warn('  GOOGLE_REDIRECT_URI=' + expected);
   ok = false;
 }
