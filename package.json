@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "smoke-export": "node scripts/smoke_export_test.js",
+    "smoke-export": "node scripts/smoke_export_checkdeps.js",
     "smoke-export-local": "node scripts/smoke_export_local_test.js",
     "test:filename-parsing": "node scripts/test_filename_parsing.js",
     "test": "npm run test:filename-parsing",
