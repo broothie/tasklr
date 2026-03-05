@@ -11,7 +11,7 @@
     "test:filename-parsing": "node scripts/test_filename_parsing.js",
     "test": "npm run test:filename-parsing",
     "test:auth-refresh": "node scripts/test_auth_refresh.js",
-    "test:ci": "npm run test && npm run smoke-export-local && npm run test:auth-refresh",
+    "test:ci": "npm run test && npm run test:validate-env && npm run smoke-export-local && npm run test:auth-refresh",
     "validate-env": "node scripts/validate_oauth_env.js",
     "test:validate-env": "node scripts/test_validate_env.js"
   },
