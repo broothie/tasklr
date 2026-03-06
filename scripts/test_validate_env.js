@@ -85,5 +85,28 @@ if (r2.status !== 0) {
   console.log('PASS: validate_oauth_env passes with SESSION_SECRET');
 }
 
+
+// Test 3: Fail when short secret and FAIL_ON_WEAK_SESSION_SECRET set
+const env3 = {
+  GOOGLE_CLIENT_ID: 'x',
+  GOOGLE_CLIENT_SECRET: 'y',
+  BASE_URL: 'http://localhost:3000',
+  SESSION_SECRET: 'short',
+  GOOGLE_REDIRECT_URI: 'http://localhost:3000/auth/callback',
+  FAIL_ON_WEAK_SESSION_SECRET: '1',
+};
+const r3 = runWithEnv(env3);
+if (r3.status === 0) {
+  console.error('FAIL: expected non-zero exit when session secret is weak and FAIL_ON_WEAK_SESSION_SECRET=1');
+  failed = true;
+} else if (!(/SESSION_SECRET/.test(r3.stdout + r3.stderr) || /FAIL_ON_WEAK_SESSION_SECRET/.test(r3.stdout + r3.stderr))) {
+  console.error('FAIL: expected message about weak SESSION_SECRET in output when enforcement enabled');
+  console.error('stdout:', r3.stdout);
+  console.error('stderr:', r3.stderr);
+  failed = true;
+} else {
+  console.log('PASS: enforcement of weak session secret works');
+}
+
 if (failed) process.exit(1);
 console.log('ALL TESTS PASSED');
