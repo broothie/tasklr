@@ -566,6 +566,14 @@ app.get('/api/readiness', async (req, res) => {
   }
 });
 
+
+// Warn if SESSION_SECRET is missing or weak (help devs avoid insecure defaults)
+if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET === 'dev-secret-change-in-prod' || (process.env.SESSION_SECRET && process.env.SESSION_SECRET.length < 16)) {
+  console.warn('WARNING: SESSION_SECRET is missing or weak.
+  Set SESSION_SECRET to a long random string before running in production.
+  You can generate one with: npm run gen-secret');
+}
+
 app.listen(PORT, () => {
   console.log(`Tasklr running at ${BASE_URL}`);
 });
