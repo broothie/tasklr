@@ -89,3 +89,8 @@ Validate environment helper
 - A small developer helper exists: `npm run validate-env` which runs `scripts/validate_oauth_env.js`.
 - The helper checks that `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `BASE_URL` are set and verifies the expected OAuth redirect URI (`<BASE_URL>/auth/callback`).
 - Use this before running smoke tests or starting the app locally to catch common misconfiguration early.
+
+Generate a secure session secret
+
+- You can generate a suitable `SESSION_SECRET` with: `npm run gen-secret` (defaults to 32 bytes = 64 hex chars).
+- For example: `SESSION_SECRET=$(npm run --silent gen-secret)` and then export it before starting the server.
