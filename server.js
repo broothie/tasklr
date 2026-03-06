@@ -568,11 +568,23 @@ app.get('/api/readiness', async (req, res) => {
 
 
 // Warn if SESSION_SECRET is missing or weak (help devs avoid insecure defaults)
-if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET === 'dev-secret-change-in-prod' || (process.env.SESSION_SECRET && process.env.SESSION_SECRET.length < 16)) {
-  console.warn('WARNING: SESSION_SECRET is missing or weak.
-  Set SESSION_SECRET to a long random string before running in production.
-  You can generate one with: npm run gen-secret');
-}
+(function(){
+  const sessionSecret = process.env.SESSION_SECRET || '';
+  const isDevPlaceholder = sessionSecret === 'dev-secret-change-in-prod';
+  const isTooShort = sessionSecret && sessionSecret.length < 16;
+  const isMissingOrWeak = !sessionSecret || isDevPlaceholder || isTooShort;
+  if (!isMissingOrWeak) return;
+
+  const msg = 'WARNING: SESSION_SECRET is missing or weak. Set SESSION_SECRET to a long random string before running in production. You can generate one with: npm run gen-secret';
+  console.warn(msg);
+
+  // In production, treat a missing/weak secret as fatal to avoid insecure deployments.
+  if (process.env.NODE_ENV === 'production') {
+    console.error('FATAL: NODE_ENV=production requires a secure SESSION_SECRET. Exiting.');
+    // Give logs a moment in some environments before exiting.
+    try { setTimeout(() => process.exit(1), 50); } catch (e) { process.exit(1); }
+  }
+})();
 
 app.listen(PORT, () => {
   console.log(`Tasklr running at ${BASE_URL}`);
