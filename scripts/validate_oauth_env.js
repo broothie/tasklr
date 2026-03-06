@@ -64,6 +64,12 @@ if (found) {
   console.warn('  GOOGLE_REDIRECT_URI=' + expected);
   ok = false;
 }
+
+// Warn if SESSION_SECRET is present but likely too short for production
+const sess = process.env.SESSION_SECRET || '';
+if (sess && sess.length < 16) {
+  console.warn('WARNING: SESSION_SECRET is shorter than 16 characters — consider using a longer random string in production.');
+}
 if (ok) {
   console.log('\nAll checks passed.');
   process.exit(0);
