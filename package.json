@@ -11,11 +11,12 @@
     "test:filename-parsing": "node scripts/test_filename_parsing.js",
     "test": "npm run test:filename-parsing",
     "test:auth-refresh": "node scripts/test_auth_refresh.js",
-    "test:ci": "npm run test && npm run test:validate-env && npm run smoke-export-local && npm run test:auth-refresh",
+    "test:ci": "npm run test && npm run test:validate-env && npm run smoke-export-local && npm run test:auth-refresh && npm run check:syntax",
     "validate-env": "node scripts/validate_oauth_env.js",
     "test:validate-env": "node scripts/test_validate_env.js",
     "gen-secret": "node scripts/generate_session_secret.js",
-    "test:quick": "npm run test:filename-parsing && npm run test:validate-env"
+    "test:quick": "npm run test:filename-parsing && npm run test:validate-env",
+    "check:syntax": "node --check server.js"
   },
   "dependencies": {
     "dotenv": "^16.4.7",
