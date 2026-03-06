@@ -65,10 +65,18 @@ if (found) {
   ok = false;
 }
 
-// Warn if SESSION_SECRET is present but likely too short for production
+// Warn or fail if SESSION_SECRET is present but likely too short for production
+// If FAIL_ON_WEAK_SESSION_SECRET is set to 1 or true (case-insensitive), treat
+// a short session secret as a fatal error. Otherwise emit a warning.
 const sess = process.env.SESSION_SECRET || '';
 if (sess && sess.length < 16) {
-  console.warn('WARNING: SESSION_SECRET is shorter than 16 characters — consider using a longer random string in production.');
+  const enforce = /^(1|true)$/i.test(process.env.FAIL_ON_WEAK_SESSION_SECRET || '');
+  if (enforce) {
+    console.error('ERROR: SESSION_SECRET is shorter than 16 characters and FAIL_ON_WEAK_SESSION_SECRET is set; refusing to continue.');
+    ok = false;
+  } else {
+    console.warn('WARNING: SESSION_SECRET is shorter than 16 characters — consider using a longer random string in production.');
+  }
 }
 if (ok) {
   console.log('\nAll checks passed.');
