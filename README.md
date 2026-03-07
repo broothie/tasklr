@@ -75,6 +75,7 @@ Local environment variables (see `.env.example`)
 - `SESSION_SECRET` — a long random string used to sign session cookies. Change this in production.
 - `BASE_URL` — the external URL where the app is reachable (defaults to `http://localhost:3000`). This value is used to build the OAuth redirect URI.
 - `ALLOW_TEST_ROUTES` — set to `1` to enable lightweight test-only routes (used by local smoke tests).
+- `FAIL_ON_WEAK_SESSION_SECRET` — set to `1` or `true` to make `scripts/validate_oauth_env.js` exit non-zero when `SESSION_SECRET` is shorter than 16 characters (useful for CI enforcement).
 - `READINESS_CHECK_GOOGLE` and `READINESS_CHECK_GOOGLE_AUTH_REFRESH_TOKEN` — control the authenticated readiness probe; see `server.js` for details.
 
 Testing and smoke checks
