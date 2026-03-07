@@ -470,7 +470,17 @@ if (process.env.ALLOW_TEST_ROUTES === '1') {
 app.get('/api/me', requireAuth, (req, res) => {
   try {
     const sessUser = req.session && req.session.user ? { name: req.session.user.name, picture: req.session.user.picture } : null;
-    const tokens = req.session && req.session.tokens ? { expiry_date: req.session.tokens.expiry_date } : null;
+    // Expose only non-sensitive token metadata to the client.
+    // Do NOT include refresh_token or raw access tokens.
+    const tokens = (req.session && req.session.tokens) ? (() => {
+      const t = { expiry_date: req.session.tokens.expiry_date };
+      if (req.session.tokens.scope) {
+        try {
+          t.scopes = String(req.session.tokens.scope).split(/\s+/).filter(Boolean);
+        } catch (e) { /* ignore parse errors */ }
+      }
+      return t;
+    })() : null;
     const resp = Object.assign({}, sessUser || {}, { authenticated: !!sessUser, tokens });
     res.json(resp);
   } catch (err) {
