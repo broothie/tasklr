@@ -465,6 +465,18 @@ if (process.env.ALLOW_TEST_ROUTES === '1') {
   });
 }
 
+// Simple endpoint to expose current authenticated user info to the client
+app.get('/api/me', requireAuth, (req, res) => {
+  try {
+    const user = req.session && req.session.user ? { name: req.session.user.name, picture: req.session.user.picture } : null;
+    const tokens = req.session && req.session.tokens ? { expiry_date: req.session.tokens.expiry_date } : null;
+    res.json({ authenticated: !!user, user, tokens });
+  } catch (err) {
+    console.error('Error in /api/me:', err && err.message);
+    res.status(500).json({ error: 'failed_to_get_user' });
+  }
+});
+
 // ─── Start// ─── Start ───────────────────────────────────────────────────────────────────
 
 
