@@ -459,6 +459,11 @@ if (process.env.ALLOW_TEST_ROUTES === '1') {
       res.json(sample);
     }
   });
+  app.get('/__test/me', (req, res) => {
+    const now = Date.now();
+    res.json({ name: 'Test User', picture: null, authenticated: true, tokens: { expiry_date: now + 3600000 } });
+  });
+
 }
 
 // Simple endpoint to expose current authenticated user info to the client
@@ -595,6 +600,10 @@ app.get('/api/readiness', async (req, res) => {
   }
 })();
 
-app.listen(PORT, () => {
-  console.log(`Tasklr running at ${BASE_URL}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Tasklr running at ${BASE_URL}`);
+  });
+}
+
+module.exports = app;
