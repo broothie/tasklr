@@ -12,6 +12,8 @@ const path = require('path');
 const fs = require('fs');
 const FileStore = require('session-file-store')(session);
 
+const { isSafeReturnTo } = require('./lib/auth_helpers');
+
 const app = express();
 
 // Security / proxy settings
@@ -144,7 +146,7 @@ app.get('/auth/google', (req, res) => {
   // Preserve safe next/returnTo for post-auth redirect
   try {
     const nextUrl = req.query.next || req.query.returnTo;
-    if (nextUrl && typeof nextUrl === 'string' && nextUrl.startsWith('/') && !nextUrl.startsWith('//')) {
+    if (isSafeReturnTo(nextUrl)) {
       req.session.returnTo = nextUrl;
     }
   } catch (e) { /* ignore malformed query */ }

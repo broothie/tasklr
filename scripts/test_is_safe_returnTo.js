@@ -1,0 +1,27 @@
+const { isSafeReturnTo } = require('../lib/auth_helpers');
+const cases = [
+  { val: '/foo', ok: true },
+  { val: '/', ok: true },
+  { val: '/foo?bar=1', ok: true },
+  { val: '//evil.example.com', ok: false },
+  { val: 'http://example.com', ok: false },
+  { val: 'https://example.com', ok: false },
+  { val: '', ok: false },
+  { val: null, ok: false },
+  { val: undefined, ok: false },
+  { val: '/\u202e', ok: true },
+];
+let failed = 0;
+for (const c of cases) {
+  const got = isSafeReturnTo(c.val);
+  if (got !== c.ok) {
+    console.error('Case failed', c, 'got', got);
+    failed++;
+  }
+}
+if (failed) {
+  console.error('FAILED', failed, 'cases');
+  process.exit(1);
+}
+console.log('All isSafeReturnTo tests passed');
+process.exit(0);
