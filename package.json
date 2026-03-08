@@ -17,7 +17,8 @@
     "gen-secret": "node scripts/generate_session_secret.js",
     "test:quick": "npm run test:filename-parsing && npm run test:validate-env",
     "check:syntax": "node --check server.js",
-    "test:api-me": "node scripts/test_api_me.js"
+    "test:api-me": "node scripts/test_api_me.js",
+    "smoke:api-me": "bash scripts/smoke-api-me.sh"
   },
   "dependencies": {
     "dotenv": "^16.4.7",
