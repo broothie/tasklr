@@ -179,6 +179,18 @@ app.post('/auth/logout', (req, res) => {
   });
 });
 
+// Also accept GET on /auth/logout to ease simple smoke checks
+app.get('/auth/logout', (req, res) => {
+  try {
+    req.session && req.session.destroy && req.session.destroy(() => {
+      res.redirect('/login');
+    });
+  } catch (e) {
+    // If session destroy throws, still redirect to login
+    res.redirect('/login');
+  }
+});
+
 // ─── App routes ─────────────────────────────────────────────────────────────
 
 app.get('/', requireAuth, (req, res) => {
