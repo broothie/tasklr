@@ -948,7 +948,7 @@
         const banner = document.createElement('div');
         banner.id = 'scope-warning';
         banner.className = 'scope-warning';
-        banner.innerHTML = '<strong>Missing Tasks permission:</strong> Tasklr needs access to your Google Tasks to show and manage tasks. Please sign out and sign in again, granting the requested permission.';
+        banner.innerHTML = `<strong>Missing Tasks permission:</strong> Tasklr needs access to your Google Tasks to show and manage tasks. <div style="margin-top:8px"><a class="btn btn-primary" href="/auth/google">Re-authorize</a> <form method="POST" action="/auth/logout" style="display:inline;margin-left:8px"><button class="btn btn-secondary" type="submit">Sign out</button></form></div>`;
         document.body.insertBefore(banner, document.body.firstChild);
         // Keep the UI in a safe read-only state.
         const taskList = document.getElementById('task-list');
