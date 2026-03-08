@@ -10,6 +10,10 @@ const cases = [
   { val: null, ok: false },
   { val: undefined, ok: false },
   { val: '/\u202e', ok: true },
+  // New cases to guard against header/control-char/backslash abuse
+  { val: '/path\\with\\backslash', ok: false },
+  { val: '/path%2f%2fbad', ok: false },
+  { val: '/' + 'a'.repeat(2001), ok: false },
 ];
 let failed = 0;
 for (const c of cases) {
