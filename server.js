@@ -141,6 +141,14 @@ app.get('/login', (req, res) => {
 });
 
 app.get('/auth/google', (req, res) => {
+  // Preserve safe next/returnTo for post-auth redirect
+  try {
+    const nextUrl = req.query.next || req.query.returnTo;
+    if (nextUrl && typeof nextUrl === 'string' && nextUrl.startsWith('/') && !nextUrl.startsWith('//')) {
+      req.session.returnTo = nextUrl;
+    }
+  } catch (e) { /* ignore malformed query */ }
+
   const oauth2Client = createOAuthClient();
   const url = oauth2Client.generateAuthUrl({
     access_type: 'offline',
@@ -166,7 +174,14 @@ app.get('/auth/callback', async (req, res) => {
     const { data: userInfo } = await oauth2.userinfo.get();
     req.session.user = { name: userInfo.name, picture: userInfo.picture };
 
-    res.redirect('/');
+    // Redirect back to the stored returnTo (if set and safe), otherwise home
+    try {
+      const redirectTo = (req.session && req.session.returnTo) ? req.session.returnTo : '/';
+      if (req.session) delete req.session.returnTo;
+      res.redirect(redirectTo);
+    } catch (e) {
+      res.redirect('/');
+    }
   } catch (err) {
     console.error('OAuth callback error:', err);
     res.redirect('/login?error=auth_failed');
