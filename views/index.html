@@ -924,12 +924,13 @@
   let statusFilter = 'all';
 
   // ─── Init ───────────────────────────────────────────────
+  // ─── Init ───────────────────────────────────────────────
   async function init() {
     try {
-      const [user, lists] = await Promise.all([
-        fetch('/api/me').then(r => r.json()),
-        fetch('/api/tasklists').then(r => r.json()),
-      ]);
+      // Fetch user info first so we can detect granted OAuth scopes and
+      // conditionally enable features (no heavy calls if the permission is
+      // not present).
+      const user = await fetch('/api/me').then(r => r.json());
 
       if (user.name) {
         document.getElementById('user-name').textContent = user.name;
@@ -940,9 +941,24 @@
         img.style.display = 'block';
       }
 
-      renderSidebar(lists);
+      const hasTasksScope = user && user.tokens && Array.isArray(user.tokens.scopes) && user.tokens.scopes.includes('https://www.googleapis.com/auth/tasks');
+      if (!hasTasksScope) {
+        // Show a prominent banner explaining limited functionality and stop
+        // further initialization that would call Tasks APIs.
+        const banner = document.createElement('div');
+        banner.id = 'scope-warning';
+        banner.className = 'scope-warning';
+        banner.innerHTML = '<strong>Missing Tasks permission:</strong> Tasklr needs access to your Google Tasks to show and manage tasks. Please sign out and sign in again, granting the requested permission.';
+        document.body.insertBefore(banner, document.body.firstChild);
+        // Keep the UI in a safe read-only state.
+        const taskList = document.getElementById('task-list');
+        if (taskList) taskList.innerHTML = '<div class="state-msg"><p>Task access is not granted. Sign out and sign in again to enable task features.</p></div>';
+        return;
+      }
 
-      // Auto-select first list
+      // Load task lists now that we know we have the required scope.
+      const lists = await fetch('/api/tasklists').then(r => r.json());
+      renderSidebar(lists);
       if (lists.length > 0) {
         selectList(lists[0].id, lists[0].title);
       }
