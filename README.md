@@ -40,8 +40,8 @@ Files of interest
 
 Tests
 
-- The repository includes a focused unit-style check for filename parsing used when processing `Content-Disposition` headers. Run the check with:
-  - `npm test` (runs the `test:filename-parsing` script)
+- The repository includes a focused unit-style check for filename parsing used when processing `Content-Disposition` headers, plus a small dependency-free check that verifies the client preserves URL fragments when building the re-authorize URL. Run the checks with:
+  - `npm test` (runs the `test:filename-parsing` script and the re-authorize hash check `test_include_hash_in_reauth.js`)
 
 - Quick dependency-free checks
 - `npm run test:quick` runs two fast checks (`test_filename_parsing` and `test_validate_env`) that do not require installing the full dependency tree. These are useful in constrained environments or local smoke runs where `node_modules` are not installed.
