@@ -9,7 +9,7 @@
     "smoke-export": "node scripts/smoke_export_checkdeps.js",
     "smoke-export-local": "node scripts/smoke_export_local_test.js",
     "test:filename-parsing": "node scripts/test_filename_parsing.js",
-    "test": "npm run test:filename-parsing",
+    "test": "node scripts/test_filename_parsing.js && node scripts/test_include_hash_in_reauth.js",
     "test:auth-refresh": "node scripts/test_auth_refresh.js",
     "test:ci": "npm run test && npm run test:validate-env && npm run smoke-export-local && npm run test:auth-refresh && npm run check:syntax",
     "validate-env": "node scripts/validate_oauth_env.js",
@@ -18,7 +18,8 @@
     "test:quick": "npm run test:filename-parsing && npm run test:validate-env",
     "check:syntax": "node --check server.js",
     "test:api-me": "node scripts/test_api_me.js",
-    "smoke:api-me": "bash scripts/smoke-api-me.sh"
+    "smoke:api-me": "bash scripts/smoke-api-me.sh",
+    "test:include-reauth-hash": "node scripts/test_include_hash_in_reauth.js"
   },
   "dependencies": {
     "dotenv": "^16.4.7",
