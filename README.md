@@ -43,6 +43,9 @@ Tests
 - The repository includes a focused unit-style check for filename parsing used when processing `Content-Disposition` headers. Run the check with:
   - `npm test` (runs the `test:filename-parsing` script)
 
+- Quick dependency-free checks
+- `npm run test:quick` runs two fast checks (`test_filename_parsing` and `test_validate_env`) that do not require installing the full dependency tree. These are useful in constrained environments or local smoke runs where `node_modules` are not installed.
+
 - There are additional smoke test scripts related to export/download behavior:
   - `npm run smoke-export` (requires network and appropriate credentials)
   - `npm run smoke-export-local` (local-only variant)
