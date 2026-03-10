@@ -20,7 +20,8 @@
     "test:api-me": "node scripts/test_api_me.js",
     "smoke:api-me": "bash scripts/smoke-api-me.sh",
     "test:include-reauth-hash": "node scripts/test_include_hash_in_reauth.js",
-    "test:integration": "node scripts/test_integration_routes.js"
+    "test:integration": "node scripts/test_integration_routes.js",
+    "test:local": "npm run check:syntax && npm test"
   },
   "dependencies": {
     "dotenv": "^16.4.7",
