@@ -44,6 +44,10 @@ Tests
   - `npm test` (runs the `test:filename-parsing` script and the re-authorize hash check `test_include_hash_in_reauth.js`)
 
 - Quick dependency-free checks
+
+- Fast local syntax-only check
+  - Use `npm run test:local` to run `node --check server.js` plus the dependency-free tests (same as `npm run check:syntax && npm test`). This is convenient when `node_modules` may not be installed.
+
 - `npm run test:quick` runs two fast checks (`test_filename_parsing` and `test_validate_env`) that do not require installing the full dependency tree. These are useful in constrained environments or local smoke runs where `node_modules` are not installed.
 
 - There are additional smoke test scripts related to export/download behavior:
