@@ -14,6 +14,10 @@ const cases = [
   { val: '/path\\with\\backslash', ok: false },
   { val: '/path%2f%2fbad', ok: false },
   { val: '/' + 'a'.repeat(2001), ok: false },
+  // Percent-encoded CR/LF should be rejected
+  { val: '/bad%0a', ok: false },
+  { val: '/bad%0A', ok: false },
+  { val: '/bad%0d', ok: false },
 ];
 let failed = 0;
 for (const c of cases) {
