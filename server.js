@@ -641,7 +641,10 @@ app.get('/api/readiness', async (req, res) => {
 
 if (require.main === module) {
   app.listen(PORT, () => {
-    console.log(`Tasklr running at ${BASE_URL}`);
+    // Avoid noisy startup logs during automated tests (NODE_ENV=test).
+    if (process.env.NODE_ENV !== 'test') {
+      console.log(`Tasklr running at ${BASE_URL}`);
+    }
   });
 }
 
