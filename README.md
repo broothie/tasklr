@@ -4,6 +4,9 @@ Tasklr is a small web-based task manager that uses the Google Tasks API as its d
 
 Quick start
 
+- Requires Node.js v20 or newer (see package.json engines)
+
+
 - Copy `.env.example` to `.env` and set the required environment variables:
   - `GOOGLE_CLIENT_ID` - OAuth client ID
   - `GOOGLE_CLIENT_SECRET` - OAuth client secret

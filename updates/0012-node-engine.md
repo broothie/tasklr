@@ -1,0 +1,1 @@
+# 0012 — Document Node.js engine requirement\n\nAdded a brief note about Node.js v20+ requirement to README.md to match package.json engines.\n\nWhy:\n-  declares  but README didn't call this out; making it explicit helps contributors in constrained environments.\n\nNext steps:\n- Continue small maintenance or run CI-enabled smoke checks.\n\nTurns used: 3\n
