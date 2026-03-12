@@ -33,7 +33,18 @@ app.use((req, res, next) => {
   res.setHeader('Referrer-Policy', 'no-referrer-when-downgrade');
   res.setHeader('X-Robots-Tag', 'noindex, nofollow');
   // Content Security Policy: conservative defaults; adjust as UI/resources evolve
-  res.setHeader('Content-Security-Policy', "default-src 'self' https: data:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data:; connect-src 'self' https://www.googleapis.com https://*.googleapis.com; frame-ancestors 'none'");
+  // Content Security Policy: conservative defaults; adjust as UI/resources evolve
+  const cspDefault = "default-src 'self' https: data:;";
+  const cspConnect = "connect-src 'self' https://www.googleapis.com https://*.googleapis.com;";
+  const cspFrame = "frame-ancestors 'none';";
+  let scriptSrc = "script-src 'self' 'unsafe-inline' https:;";
+  let styleSrc = "style-src 'self' 'unsafe-inline' https:;";
+  if (process.env.NODE_ENV === 'production') {
+    // Disallow inline scripts/styles in production for better security posture.
+    scriptSrc = "script-src 'self' https:;";
+    styleSrc = "style-src 'self' https:;";
+  }
+  res.setHeader('Content-Security-Policy', [cspDefault, scriptSrc, styleSrc, "img-src 'self' data:;", cspConnect, cspFrame].join(' '));
   next();
 });
 
