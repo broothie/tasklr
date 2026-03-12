@@ -102,3 +102,9 @@ Generate a secure session secret
 
 - You can generate a suitable `SESSION_SECRET` with: `npm run gen-secret` (defaults to 32 bytes = 64 hex chars).
 - For example: `SESSION_SECRET=$(npm run --silent gen-secret)` and then export it before starting the server.
+
+Smoke status/health smoke test
+
+- A quick server smoke test is available: `npm run smoke-status-health`.
+- This runs `scripts/smoke_status_health_checkdeps.js`, which will automatically skip and print a helpful message if runtime dependencies (like `express`) are not installed. Run `npm install` to enable the full server-based smoke test.
+- In CI, consider running `npm run smoke-status-health` in jobs that install dependencies; it starts the app with test routes enabled and checks `/api/status` and `/health`.
