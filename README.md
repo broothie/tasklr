@@ -43,6 +43,14 @@ Files of interest
 
 Tests
 
+
+Dependency-free tests (local)
+
+- Use the fast dependency-free checks when `node_modules` may not be installed or network access is unavailable.
+- Run the quick checks with:
+  - `npm run test:quick` — runs `test_filename_parsing` and `test_validate_env` (no npm install required).
+  - `npm run test:local` — runs a syntax-only check (`node --check server.js`) plus the dependency-free tests.
+- These are useful for CI smoke runs or when iterating locally without installing the full dependency tree.
 - The repository includes a focused unit-style check for filename parsing used when processing `Content-Disposition` headers, plus a small dependency-free check that verifies the client preserves URL fragments when building the re-authorize URL. Run the checks with:
   - `npm test` (runs the `test:filename-parsing` script and the re-authorize hash check `test_include_hash_in_reauth.js`)
 
