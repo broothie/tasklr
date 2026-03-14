@@ -127,3 +127,11 @@ Quick commands (dependency-free)
   - `npm run test:local` — runs a fast syntax-only check (`node --check server.js`) then the dependency-free checks.
 - Expected outcome: these scripts exit `0` when checks pass and print a short summary; they are safe to run in CI or developer machines without network access.
 
+
+Running dependency-free tests (local, no npm install)
+
+- These checks are safe to run without installing dependencies or having network access.
+- Quick commands:
+  - `npm run test:quick` — runs filename-parsing and env-validation checks (no network / no node_modules required).
+  - `npm run test:local` — runs `node --check server.js` plus the dependency-free checks.
+- Use these when you want a fast syntax-and-smoke check in CI or on a developer machine without network access.
