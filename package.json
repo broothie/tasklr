@@ -22,7 +22,8 @@
     "test:include-reauth-hash": "node scripts/test_include_hash_in_reauth.js",
     "test:integration": "node scripts/test_integration_routes.js",
     "test:local": "npm run check:syntax && npm test",
-    "smoke-status-health": "node scripts/smoke_status_health_checkdeps.js"
+    "smoke-status-health": "node scripts/smoke_status_health_checkdeps.js",
+    "test:status": "node scripts/test_status.js"
   },
   "dependencies": {
     "dotenv": "^16.4.7",
