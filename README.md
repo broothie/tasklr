@@ -46,6 +46,9 @@ Tests
 
 Dependency-free tests (local)
 
+- Quick export filename presence check (dependency-free)
+  - Run `npm run check:export` to validate the /api/export Content-Disposition handling in `server.js` without installing dependencies or starting the server.
+
 - Use the fast dependency-free checks when `node_modules` may not be installed or network access is unavailable.
 - Run the quick checks with:
   - `npm run test:quick` — runs `test_filename_parsing` and `test_validate_env` (no npm install required).
