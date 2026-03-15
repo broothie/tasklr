@@ -26,7 +26,8 @@
     "test:status": "node scripts/test_status.js",
     "check:endpoints": "node scripts/check_endpoints.js",
     "check:export": "node scripts/check_export_filename.js",
-    "test:depfree": "node --check server.js && npm run test:quick"
+    "test:depfree": "node --check server.js && npm run test:quick",
+    "test:health": "node scripts/test_health.js"
   },
   "dependencies": {
     "dotenv": "^16.4.7",
