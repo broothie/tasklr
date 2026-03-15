@@ -492,7 +492,7 @@ if (process.env.ALLOW_TEST_ROUTES === '1') {
     if (req.query && req.query.download === '1') {
       const ts = new Date().toISOString().replace(/[:.]/g, '-');
       const filename = 'tasklr-export-' + ts + '.json';
-      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
       res.send(JSON.stringify(sample, null, 2));
     } else {
