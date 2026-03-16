@@ -504,6 +504,11 @@ if (process.env.ALLOW_TEST_ROUTES === '1') {
     res.json({ name: 'Test User', picture: null, authenticated: true, tokens: { expiry_date: now + 3600000 } });
   });
 
+  app.get('/__test/counts', (req, res) => {
+    const sampleCounts = { 'test-list': 1 };
+    res.json(sampleCounts);
+  });
+
 }
 
 // Simple endpoint to expose current authenticated user info to the client
