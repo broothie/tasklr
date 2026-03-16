@@ -28,7 +28,8 @@
     "check:export": "node scripts/check_export_filename.js",
     "test:depfree": "node --check server.js && npm run test:quick",
     "test:health": "node scripts/test_health.js",
-    "smoke:depfree": "node scripts/smoke_depfree_runner.js"
+    "smoke:depfree": "node scripts/smoke_depfree_runner.js",
+    "check:session-secret": "node scripts/check_session_secret.js"
   },
   "dependencies": {
     "dotenv": "^16.4.7",
